@@ -1,7 +1,10 @@
 """Agent command handlers."""
 
+import os
 from pathlib import Path
 from typing import Optional
+
+import httpx
 
 from sudosu.core import get_project_config_dir
 from sudosu.core.agent_loader import (
@@ -21,6 +24,49 @@ from sudosu.ui import (
     print_success,
     print_warning,
 )
+
+
+# Backend URL for prompt refinement
+BACKEND_URL = os.environ.get("SUDOSU_BACKEND_URL", "http://localhost:8000")
+
+
+async def refine_prompt_via_backend(
+    name: str,
+    description: str,
+    tools: list[str],
+) -> tuple[str, str]:
+    """Call the backend to refine an agent's system prompt.
+    
+    Args:
+        name: Agent name
+        description: Brief description from user
+        tools: List of available tools
+        
+    Returns:
+        Tuple of (refined_system_prompt, refined_description)
+        Returns fallback values if backend is unavailable.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                f"{BACKEND_URL}/refine-prompt",
+                json={
+                    "name": name,
+                    "description": description,
+                    "tools": tools,
+                },
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data["system_prompt"], data["refined_description"]
+            else:
+                # Backend returned an error, use fallback
+                return None, None
+                
+    except Exception:
+        # Backend unavailable, return None to signal fallback
+        return None, None
 
 
 def list_agents_command():
@@ -107,8 +153,27 @@ async def create_agent_command(name: Optional[str] = None):
         if not description:
             description = f"A helpful assistant named {name}"
         
-        # Generate a basic system prompt
-        system_prompt = f"""# {name.title()} Agent
+        # Default tools for the agent
+        default_tools = ["read_file", "write_file", "list_directory"]
+        
+        # Refine the prompt via backend
+        console.print("[dim]Crafting agent prompt...[/dim]")
+        refined_prompt, refined_description = await refine_prompt_via_backend(
+            name=name,
+            description=description,
+            tools=default_tools,
+        )
+        
+        if refined_prompt:
+            # Use the refined prompt from backend
+            system_prompt = refined_prompt
+            if refined_description:
+                description = refined_description
+            console.print("[green]✓[/green] Agent prompt refined")
+        else:
+            # Fallback to basic prompt if backend unavailable
+            console.print("[yellow]![/yellow] [dim]Using basic prompt (backend unavailable)[/dim]")
+            system_prompt = f"""# {name.replace('-', ' ').replace('_', ' ').title()} Agent
 
 You are {description.lower()}.
 
