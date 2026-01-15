@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Any
 
 
+# Special routing result marker
+ROUTING_MARKER = "_sudosu_routing"
+
+
 async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
     """
     Execute a tool locally and return the result.
@@ -25,6 +29,7 @@ async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
         "list_directory": tool_list_directory,
         "run_command": tool_run_command,
         "search_files": tool_search_files,
+        "route_to_agent": tool_route_to_agent,
     }
     
     executor = executors.get(tool_name)
@@ -32,6 +37,37 @@ async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
         return {"error": f"Unknown tool: {tool_name}"}
     
     return await executor(args, cwd)
+
+
+async def tool_route_to_agent(args: dict, cwd: str) -> dict:  # noqa: ARG001
+    """
+    Handle routing to another agent.
+    
+    This returns a special marker that the CLI intercepts to perform
+    the actual agent handoff.
+    
+    Args:
+        args: {"agent_name": str, "message": str}
+        cwd: Current working directory (unused for routing)
+    
+    Returns:
+        Special routing result with marker
+    """
+    agent_name = args.get("agent_name")
+    message = args.get("message", "")
+    
+    if not agent_name:
+        return {"error": "Missing 'agent_name' argument"}
+    
+    # Return special routing marker that CLI will intercept
+    # The output message must clearly indicate completion to prevent
+    # the LLM from calling route_to_agent again in a loop
+    return {
+        ROUTING_MARKER: True,
+        "agent_name": agent_name,
+        "message": message,
+        "output": f"SUCCESS: Request has been routed to @{agent_name}. The handoff is complete. Do not call route_to_agent again. Simply confirm the routing to the user and stop.",
+    }
 
 
 def _validate_path(path: str, cwd: str) -> tuple[bool, str, Path]:

@@ -17,6 +17,7 @@ from sudosu.core.connection import ConnectionManager
 from sudosu.core.default_agent import get_default_agent_config
 from sudosu.core.safety import is_safe_directory, get_safety_warning
 from sudosu.tools import execute_tool
+from sudosu.tools import ROUTING_MARKER
 from sudosu.ui import (
     clear_screen,
     console,
@@ -25,6 +26,7 @@ from sudosu.ui import (
     print_error,
     print_help,
     print_info,
+    print_routing_to_agent,
     print_success,
     print_tool_execution,
     print_tool_result,
@@ -53,9 +55,15 @@ def parse_agent_prompt(text: str) -> tuple[str, str]:
     return "", text
 
 
-async def stream_agent_response(agent_config: dict, message: str, cwd: str, agent_name: str = "agent"):
-    """Common function to stream agent response from backend."""
+async def stream_agent_response(agent_config: dict, message: str, cwd: str, agent_name: str = "agent") -> dict | None:
+    """
+    Common function to stream agent response from backend.
+    
+    Returns:
+        Routing info dict if agent called route_to_agent, None otherwise
+    """
     backend_url = get_backend_url()
+    routing_info = None
     
     try:
         manager = ConnectionManager(backend_url)
@@ -64,7 +72,7 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
         print_error(f"Failed to connect to backend: {e}")
         print_info("Make sure the backend is running")
         print_info(f"Backend URL: {backend_url}")
-        return
+        return None
     
     try:
         stream_printer = StreamPrinter()
@@ -74,6 +82,20 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
             stream_printer.print_chunk(content)
         
         async def on_tool_call(tool_name: str, args: dict):
+            nonlocal routing_info
+            
+            # Special handling for route_to_agent
+            if tool_name == "route_to_agent":
+                result = await execute_tool(tool_name, args, cwd)
+                # Capture routing info for later
+                if result.get(ROUTING_MARKER):
+                    routing_info = {
+                        "agent_name": result["agent_name"],
+                        "message": result["message"],
+                    }
+                return result
+            
+            # Normal tool execution
             print_tool_execution(tool_name, args)
             result = await execute_tool(tool_name, args, cwd)
             print_tool_result(tool_name, result)
@@ -101,6 +123,8 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
         
     finally:
         await manager.disconnect()
+    
+    return routing_info
 
 
 async def invoke_agent(prompt: str, cwd: str):
@@ -129,7 +153,7 @@ async def invoke_agent(prompt: str, cwd: str):
 
 
 async def invoke_default_agent(message: str, cwd: str):
-    """Invoke the default Sudosu assistant for general queries."""
+    """Invoke the default Sudosu assistant with intelligent routing."""
     # Get available agents to provide context
     available_agents = get_available_agents()
     
@@ -137,7 +161,27 @@ async def invoke_default_agent(message: str, cwd: str):
     agent_config = get_default_agent_config(available_agents, cwd)
     
     print_agent_thinking("sudosu")
-    await stream_agent_response(agent_config, message, cwd, "sudosu")
+    routing_info = await stream_agent_response(agent_config, message, cwd, "sudosu")
+    
+    # Check if the default agent decided to route to another agent
+    if routing_info:
+        target_agent_name = routing_info["agent_name"]
+        routed_message = routing_info["message"]
+        
+        print_routing_to_agent(target_agent_name)
+        
+        # Load the target agent config
+        target_config = get_agent_config(target_agent_name)
+        
+        if target_config:
+            print_agent_thinking(target_agent_name)
+            await stream_agent_response(target_config, routed_message, cwd, target_agent_name)
+        else:
+            print_error(f"Agent '{target_agent_name}' not found")
+            print_info("Available agents:")
+            for agent in available_agents:
+                console.print(f"  - @{agent['name']}")
+            print_info("Create a new agent with /agent create <name>")
 
 
 async def handle_command(command: str):

@@ -99,6 +99,11 @@ def print_agent_thinking(agent_name: str):
     console.print(f"\n[bold cyan]🤖 {agent_name}[/bold cyan] is thinking...\n")
 
 
+def print_routing_to_agent(agent_name: str):
+    """Print routing transition message."""
+    console.print(f"\n[bold cyan]→ Routing to @{agent_name}...[/bold cyan]\n")
+
+
 def print_tool_execution(tool_name: str, args: dict):
     """Print tool execution info."""
     if tool_name == "write_file":

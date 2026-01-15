@@ -4,4 +4,6 @@ sudosu/sudosu/__pycache__/
 sudosu/sudosu/core/__pycache__/
 sudosu/sudosu/commands/__pycache__/
 sudosu/sudosu/ui/__pycache__/
-sudosu-backend/__pycache__/
+sudosu/sudosu/core/__pycache__/
+sudosu/sudosu/tools/__pycache__/
+sudosu/sudosu/ui/__pycache__/
