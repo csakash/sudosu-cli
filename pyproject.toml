@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sudosu"
+version = "0.1.0"
+description = "Terminal-based AI Agent Platform - Create and interact with custom AI agents"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Akash Munshi"}
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "websockets>=12.0",
+    "pyyaml>=6.0",
+    "python-frontmatter>=1.0.0",
+    "httpx>=0.25.0",
+    "prompt-toolkit>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+sudosu = "sudosu.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/akashmunshi/sudosu"
+Repository = "https://github.com/akashmunshi/sudosu"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sudosu*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "W"]

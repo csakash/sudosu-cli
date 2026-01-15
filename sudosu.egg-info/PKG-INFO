@@ -1,0 +1,84 @@
+Metadata-Version: 2.4
+Name: sudosu
+Version: 0.1.0
+Summary: Terminal-based AI Agent Platform - Create and interact with custom AI agents
+Author: Akash Munshi
+License: MIT
+Project-URL: Homepage, https://github.com/akashmunshi/sudosu
+Project-URL: Repository, https://github.com/akashmunshi/sudosu
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: typer>=0.9.0
+Requires-Dist: rich>=13.0.0
+Requires-Dist: websockets>=12.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: python-frontmatter>=1.0.0
+Requires-Dist: httpx>=0.25.0
+Requires-Dist: prompt-toolkit>=3.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+
+# Sudosu 🚀
+
+**Terminal-based AI Agent Platform**
+
+Create and interact with custom AI agents that run on a hosted backend but use your local terminal as a client. Agents have access to your repository for read/write operations.
+
+## Installation
+
+```bash
+pip install sudosu
+```
+
+## Quick Start
+
+```bash
+# Initialize Sudosu
+sudosu init
+
+# Start interactive session
+sudosu
+
+# Create an agent
+/agent create writer
+
+# Use the agent
+@writer help me write a blog on AI in 2026
+```
+
+## Features
+
+- 🤖 **Custom Agents**: Create agents with specific personalities and capabilities
+- 📝 **File Operations**: Agents can read and write files in your repository
+- 🔄 **Real-time Streaming**: See agent responses as they're generated
+- 🔒 **Local Execution**: File operations happen on your machine, keeping data secure
+- 🎯 **Skills Integration**: Extend agents with reusable skills (coming soon)
+
+## Configuration
+
+Sudosu stores configuration in `~/.sudosu/`:
+
+```
+~/.sudosu/
+├── config.yaml     # API keys, backend URL, preferences
+├── agents/         # Global agent definitions
+└── skills/         # Global skills library
+```
+
+Project-specific configuration goes in `<repo>/.sudosu/`.
+
+## License
+
+MIT
