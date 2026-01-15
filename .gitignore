@@ -1,0 +1,7 @@
+sudosu/__pycache__/
+sudosu/.DS_Store
+sudosu/sudosu/__pycache__/
+sudosu/sudosu/core/__pycache__/
+sudosu/sudosu/commands/__pycache__/
+sudosu/sudosu/ui/__pycache__/
+sudosu-backend/__pycache__/
