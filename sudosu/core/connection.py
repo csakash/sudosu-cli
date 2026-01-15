@@ -62,31 +62,46 @@ class ConnectionManager:
         agent_config: dict,
         message: str,
         cwd: str,
+        session_id: Optional[str] = None,
+        thread_id: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
         on_tool_call: Optional[Callable[[str, dict], Any]] = None,
         on_status: Optional[Callable[[str], None]] = None,
+        on_special_message: Optional[Callable[[dict], Any]] = None,
     ) -> AsyncGenerator[dict, None]:
         """
-        Invoke an agent and stream the response.
+        Invoke an agent and stream the response with session context.
         
         Args:
             agent_config: Agent configuration dict
             message: User message
             cwd: Current working directory
+            session_id: Session ID for memory continuity across agents
+            thread_id: Thread ID for specific conversation continuity
             on_text: Callback for text chunks
             on_tool_call: Callback for tool calls (should return result)
             on_status: Callback for status updates
+            on_special_message: Callback for special backend messages (consultation, etc.)
         
         Yields:
             Response messages from the backend
         """
-        # Send invoke request
-        await self.send({
+        # Build request with session info for memory
+        request = {
             "type": "invoke",
             "agent": agent_config,
             "message": message,
             "cwd": cwd,
-        })
+        }
+        
+        # Include session info if provided
+        if session_id:
+            request["session_id"] = session_id
+        if thread_id:
+            request["thread_id"] = thread_id
+        
+        # Send invoke request
+        await self.send(request)
         
         # Stream responses
         while True:
@@ -130,6 +145,20 @@ class ConnectionManager:
                 elif msg_type == "error":
                     yield data
                     break
+                
+                elif msg_type == "get_available_agents":
+                    # Backend is requesting available agents for consultation
+                    if on_special_message:
+                        response = await on_special_message(data)
+                        if response:
+                            await self.send(response)
+                    yield data
+                
+                elif msg_type == "consultation_route":
+                    # Backend has decided to route via consultation
+                    if on_special_message:
+                        await on_special_message(data)
+                    yield data
                 
                 else:
                     yield data

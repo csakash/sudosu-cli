@@ -5,6 +5,8 @@ from typing import Any, Optional
 
 import frontmatter
 
+from sudosu.core.default_agent import CONTEXT_AWARE_PROMPT, SUB_AGENT_CONSULTATION_PROMPT
+
 
 def parse_agent_file(agent_path: Path) -> Optional[dict]:
     """
@@ -35,13 +37,19 @@ def parse_agent_file(agent_path: Path) -> Optional[dict]:
         if isinstance(tools, str):
             tools = [tools]
         
+        # Get the base system prompt and append context-aware instructions
+        base_prompt = str(post.content).strip()
+        # Append context awareness to all agents for better conversation handling
+        # Also append consultation instructions so sub-agents know when to consult sudosu
+        system_prompt = base_prompt + CONTEXT_AWARE_PROMPT + SUB_AGENT_CONSULTATION_PROMPT
+        
         return {
             "name": str(post.get("name", agent_path.name)),
             "description": str(description),
             "model": str(post.get("model", "gemini-2.5-pro")),
             "tools": tools,
             "skills": post.get("skills", []),
-            "system_prompt": str(post.content).strip(),
+            "system_prompt": system_prompt,
             "path": str(agent_path),
         }
     except Exception as e:

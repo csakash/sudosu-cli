@@ -37,17 +37,24 @@ def print_help():
         ("/agent", "List available agents"),
         ("/agent create <name>", "Create a new agent"),
         ("/agent delete <name>", "Delete an agent"),
+        ("/memory", "Show conversation memory info"),
+        ("/memory clear", "Clear conversation (fresh start)"),
+        ("/back", "Return to sudosu from a sub-agent"),
         ("/config", "Show current configuration"),
         ("/config set <key> <value>", "Set a configuration value"),
         ("/clear", "Clear the screen"),
         ("/quit", "Exit Sudosu"),
-        ("@<agent> <message>", "Send a message to an agent"),
+        ("", ""),
+        ("@<agent> <message>", "Switch to and message an agent"),
+        ("<message>", "Continue with current agent"),
     ]
     
     for cmd, desc in commands:
         table.add_row(cmd, desc)
     
     console.print(table)
+    console.print("\n[dim]💡 Tip: After sudosu routes you to an agent,")
+    console.print("   your follow-ups go to that agent automatically.[/dim]")
 
 
 def print_agents(agents: list[dict]):
@@ -102,6 +109,13 @@ def print_agent_thinking(agent_name: str):
 def print_routing_to_agent(agent_name: str):
     """Print routing transition message."""
     console.print(f"\n[bold cyan]→ Routing to @{agent_name}...[/bold cyan]\n")
+
+
+def print_consultation_route(from_agent: str, to_agent: str, reason: str):
+    """Print consultation routing message."""
+    console.print(f"\n[dim]💭 @{from_agent} consulted the orchestrator...[/dim]")
+    console.print(f"[bold cyan]→ Handing off to @{to_agent}[/bold cyan]")
+    console.print(f"[dim]   Reason: {reason}[/dim]\n")
 
 
 def print_tool_execution(tool_name: str, args: dict):

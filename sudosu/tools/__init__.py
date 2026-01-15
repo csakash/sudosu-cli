@@ -10,6 +10,9 @@ from typing import Any
 # Special routing result marker
 ROUTING_MARKER = "_sudosu_routing"
 
+# Special consultation routing marker
+CONSULTATION_ROUTING_MARKER = "_sudosu_consultation_route"
+
 
 async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
     """
@@ -30,6 +33,7 @@ async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
         "run_command": tool_run_command,
         "search_files": tool_search_files,
         "route_to_agent": tool_route_to_agent,
+        "consult_orchestrator": tool_consult_orchestrator,
     }
     
     executor = executors.get(tool_name)
@@ -37,6 +41,27 @@ async def execute_tool(tool_name: str, args: dict, cwd: str) -> dict:
         return {"error": f"Unknown tool: {tool_name}"}
     
     return await executor(args, cwd)
+
+
+async def tool_consult_orchestrator(args: dict, cwd: str) -> dict:  # noqa: ARG001
+    """
+    Handle consultation with the orchestrator.
+    
+    Note: This is a stub - actual consultation is handled by the backend.
+    The backend intercepts this tool call and evaluates the consultation
+    before returning a decision.
+    
+    Args:
+        args: {"situation": str, "user_request": str}
+        cwd: Current working directory (unused)
+    
+    Returns:
+        Consultation result (handled by backend)
+    """
+    # This should not be reached - backend handles this tool
+    return {
+        "output": "Consultation handled by backend",
+    }
 
 
 async def tool_route_to_agent(args: dict, cwd: str) -> dict:  # noqa: ARG001

@@ -112,3 +112,12 @@ def get_skills_dir(project_first: bool = True) -> Path:
                 return skills_dir
     
     return get_global_config_dir() / "skills"
+
+
+# Export session management
+from sudosu.core.session import (
+    ConversationSession,
+    SessionManager,
+    get_session_manager,
+    reset_session_manager,
+)
