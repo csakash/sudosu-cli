@@ -53,8 +53,7 @@ def print_help():
         table.add_row(cmd, desc)
     
     console.print(table)
-    console.print("\n[dim]💡 Tip: After sudosu routes you to an agent,")
-    console.print("   your follow-ups go to that agent automatically.[/dim]")
+    console.print("\n[dim]💡 Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
 
 
 def print_agents(agents: list[dict]):
