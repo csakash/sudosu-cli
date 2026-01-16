@@ -17,12 +17,17 @@ class ConnectionManager:
         self._connected = False
     
     async def connect(self) -> bool:
-        """Establish connection to the backend."""
+        """Establish connection to the backend.
+        
+        Timeout values increased to support long-running operations
+        like bulk email fetching (100+ emails) and multi-step automations.
+        """
         try:
             self.ws = await websockets.connect(
                 self.backend_url,
-                ping_interval=30,
-                ping_timeout=10,
+                ping_interval=120,   # 2 minutes (was 30s)
+                ping_timeout=60,     # 1 minute (was 10s)  
+                max_size=20_000_000, # 20MB for large responses
             )
             self._connected = True
             return True
