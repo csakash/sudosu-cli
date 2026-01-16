@@ -414,6 +414,29 @@ async def handle_disconnect_command(args: str = ""):
         print_error(f"Failed to disconnect: {result.get('error', 'Unknown error')}")
 
 
+async def get_registry_info() -> dict:
+    """Get tool registry information from backend.
+    
+    Returns:
+        Dict with registry data or error
+    """
+    user_id = get_user_id()
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{BACKEND_URL}/api/registry/{user_id}/summary",
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"error": f"HTTP {response.status_code}"}
+                
+    except Exception as e:
+        return {"error": str(e)}
+
+
 async def handle_integrations_command(args: str = ""):  # noqa: ARG001
     """Handle /integrations command - show all integration status.
     
@@ -461,6 +484,34 @@ async def handle_integrations_command(args: str = ""):  # noqa: ARG001
                 console.print(f"  [green]●[/green] {display_name}: [green]Connected[/green]")
             else:
                 console.print(f"  [dim]○[/dim] {display_name}: [dim]Not connected[/dim]")
+    
+    # Show tool registry info
+    console.print()
+    console.print("[bold cyan]━━━ Tool Registry ━━━[/bold cyan]")
+    console.print()
+    
+    registry_info = await get_registry_info()
+    
+    if "error" in registry_info:
+        console.print(f"  [dim]Registry not available: {registry_info['error']}[/dim]")
+    else:
+        connected_count = registry_info.get("connected_count", 0)
+        connected = registry_info.get("connected", [])
+        
+        if connected_count == 0:
+            console.print("  [dim]No tools registered (connect an integration first)[/dim]")
+        else:
+            console.print(f"  [dim]Smart tool loading enabled[/dim]")
+            for item in connected:
+                slug = item.get("slug", "")
+                display_name = item.get("display_name", slug.title())
+                tool_count = item.get("tool_count", 0)
+                capabilities = item.get("capabilities", [])[:3]
+                
+                console.print(f"  • [cyan]{display_name}[/cyan]: {tool_count} tools")
+                if capabilities:
+                    caps_str = ", ".join(capabilities[:3])
+                    console.print(f"    [dim]Capabilities: {caps_str}[/dim]")
     
     console.print()
     console.print("[dim]Commands:[/dim]")
