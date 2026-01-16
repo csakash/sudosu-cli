@@ -64,6 +64,7 @@ class ConnectionManager:
         cwd: str,
         session_id: Optional[str] = None,
         thread_id: Optional[str] = None,
+        user_id: Optional[str] = None,
         on_text: Optional[Callable[[str], None]] = None,
         on_tool_call: Optional[Callable[[str, dict], Any]] = None,
         on_status: Optional[Callable[[str], None]] = None,
@@ -78,6 +79,7 @@ class ConnectionManager:
             cwd: Current working directory
             session_id: Session ID for memory continuity across agents
             thread_id: Thread ID for specific conversation continuity
+            user_id: User ID for integration tools (Gmail, etc.)
             on_text: Callback for text chunks
             on_tool_call: Callback for tool calls (should return result)
             on_status: Callback for status updates
@@ -99,6 +101,8 @@ class ConnectionManager:
             request["session_id"] = session_id
         if thread_id:
             request["thread_id"] = thread_id
+        if user_id:
+            request["user_id"] = user_id
         
         # Send invoke request
         await self.send(request)

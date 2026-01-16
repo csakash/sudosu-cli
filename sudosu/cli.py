@@ -12,6 +12,12 @@ import typer
 from sudosu.commands.agent import get_agent_config, get_available_agents, handle_agent_command
 from sudosu.commands.config import handle_config_command
 from sudosu.commands.init import init_command, init_project_command
+from sudosu.commands.integrations import (
+    get_user_id,
+    handle_connect_command,
+    handle_disconnect_command,
+    handle_integrations_command,
+)
 from sudosu.commands.memory import handle_memory_command
 from sudosu.core import ensure_config_structure, get_backend_url, get_global_config_dir
 from sudosu.core.connection import ConnectionManager
@@ -77,6 +83,9 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
     # Use shared thread_id, not per-agent thread
     thread_id = session_mgr.get_thread_id()
     session_id = session_mgr.session_id
+    
+    # Get user_id for integration tools (Gmail, etc.)
+    user_id = get_user_id()
     
     # Increment message count
     session_mgr.increment_message_count()
@@ -155,6 +164,7 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
             cwd=cwd,
             session_id=session_id,
             thread_id=thread_id,
+            user_id=user_id,
             on_text=on_text,
             on_tool_call=on_tool_call,
             on_status=on_status,
@@ -305,6 +315,15 @@ async def handle_command(command: str):
     
     elif cmd == "/memory":
         await handle_memory_command(args)
+    
+    elif cmd == "/connect":
+        await handle_connect_command(" ".join(args))
+    
+    elif cmd == "/disconnect":
+        await handle_disconnect_command(" ".join(args))
+    
+    elif cmd == "/integrations":
+        await handle_integrations_command(" ".join(args))
     
     elif cmd == "/init":
         if args and args[0] == "project":

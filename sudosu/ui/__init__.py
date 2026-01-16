@@ -45,6 +45,11 @@ def print_help():
         ("/clear", "Clear the screen"),
         ("/quit", "Exit Sudosu"),
         ("", ""),
+        ("── Integrations ──", ""),
+        ("/connect gmail", "Connect your Gmail account"),
+        ("/disconnect gmail", "Disconnect Gmail"),
+        ("/integrations", "Show connected integrations"),
+        ("", ""),
         ("@<agent> <message>", "Switch to and message an agent"),
         ("<message>", "Continue with current agent"),
     ]

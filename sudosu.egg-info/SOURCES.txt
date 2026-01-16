@@ -12,10 +12,14 @@ sudosu/commands/__init__.py
 sudosu/commands/agent.py
 sudosu/commands/config.py
 sudosu/commands/init.py
+sudosu/commands/integrations.py
+sudosu/commands/memory.py
 sudosu/core/__init__.py
 sudosu/core/agent_loader.py
 sudosu/core/connection.py
 sudosu/core/default_agent.py
+sudosu/core/prompt_refiner.py
 sudosu/core/safety.py
+sudosu/core/session.py
 sudosu/tools/__init__.py
 sudosu/ui/__init__.py
