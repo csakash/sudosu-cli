@@ -30,6 +30,7 @@ from sudosu.ui import (
     clear_screen,
     console,
     get_user_input,
+    get_user_input_async,
     LiveStreamPrinter,
     print_agent_thinking,
     print_consultation_route,
@@ -373,7 +374,7 @@ async def interactive_session():
     if not is_safe:
         console.print(get_safety_warning(reason))
         console.print("[dim]Press Enter to exit, or type 'continue' to proceed in read-only mode...[/dim]")
-        response = get_user_input("").strip().lower()
+        response = (await get_user_input_async("")).strip().lower()
         if response != "continue":
             console.print(f"[{COLOR_ACCENT}]Exiting. Navigate to a project folder and try again.[/{COLOR_ACCENT}]")
             return
@@ -396,7 +397,7 @@ async def interactive_session():
             else:
                 prompt = "> "
             
-            user_input = get_user_input(prompt).strip()
+            user_input = (await get_user_input_async(prompt)).strip()
             
             if not user_input:
                 continue

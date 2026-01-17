@@ -1,5 +1,10 @@
 """Console UI helpers for Sudosu."""
 
+from pathlib import Path
+
+from prompt_toolkit import PromptSession
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.history import FileHistory
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -12,6 +17,30 @@ from rich.text import Text
 
 
 console = Console()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COMMAND HISTORY - Enables up/down arrow navigation for previous commands
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _get_history_file() -> Path:
+    """Get the path to the command history file."""
+    # Store history in ~/.sudosu/command_history (file, not directory)
+    history_dir = Path.home() / ".sudosu"
+    history_dir.mkdir(parents=True, exist_ok=True)
+    return history_dir / "command_history"
+
+
+# Global prompt session with persistent file history
+_prompt_session: PromptSession | None = None
+
+
+def _get_prompt_session() -> PromptSession:
+    """Get or create the global prompt session with history."""
+    global _prompt_session
+    if _prompt_session is None:
+        history_file = _get_history_file()
+        _prompt_session = PromptSession(history=FileHistory(str(history_file)))
+    return _prompt_session
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SUDOSU BRAND COLORS
@@ -358,8 +387,44 @@ class LiveStreamPrinter:
 
 
 def get_user_input(prompt: str = "> ") -> str:
-    """Get user input with styled prompt."""
-    return console.input(f"[bold {COLOR_PRIMARY}]{prompt}[/bold {COLOR_PRIMARY}]")
+    """Get user input with styled prompt and command history.
+    
+    Supports:
+    - Up/Down arrows to navigate command history
+    - History persisted to ~/.sudosu/command_history
+    - Standard readline-style editing (Ctrl+A, Ctrl+E, etc.)
+    
+    Note: This is a sync wrapper. For async contexts, use get_user_input_async().
+    """
+    session = _get_prompt_session()
+    # Use prompt_toolkit's HTML formatting for proper color support
+    # COLOR_PRIMARY is #FEEAC9 (warm cream)
+    styled_prompt = HTML(f'<style fg="#FEEAC9" bold="true">{prompt}</style>')
+    
+    # Check if we're in an async context
+    import asyncio
+    try:
+        asyncio.get_running_loop()
+        # We're in an async context - use a thread to avoid event loop conflicts
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(session.prompt, styled_prompt)
+            return future.result()
+    except RuntimeError:
+        # No running loop - safe to use sync version
+        return session.prompt(styled_prompt)
+
+
+async def get_user_input_async(prompt: str = "> ") -> str:
+    """Async version of get_user_input with command history.
+    
+    Use this in async contexts (like the main interactive loop).
+    """
+    session = _get_prompt_session()
+    # Use prompt_toolkit's HTML formatting for proper color support
+    # COLOR_PRIMARY is #FEEAC9 (warm cream)
+    styled_prompt = HTML(f'<style fg="#FEEAC9" bold="true">{prompt}</style>')
+    return await session.prompt_async(styled_prompt)
 
 
 def get_user_confirmation(message: str) -> bool:
