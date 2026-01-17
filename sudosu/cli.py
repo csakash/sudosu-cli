@@ -1,4 +1,4 @@
-"""Sudosu CLI - Terminal-based AI Agent Platform."""
+"""Sudosu CLI - Your AI Coworker Platform."""
 
 import asyncio
 import os
@@ -12,6 +12,12 @@ import typer
 from sudosu.commands.agent import get_agent_config, get_available_agents, handle_agent_command
 from sudosu.commands.config import handle_config_command
 from sudosu.commands.init import init_command, init_project_command
+from sudosu.commands.integrations import (
+    get_user_id,
+    handle_connect_command,
+    handle_disconnect_command,
+    handle_integrations_command,
+)
 from sudosu.commands.memory import handle_memory_command
 from sudosu.core import ensure_config_structure, get_backend_url, get_global_config_dir
 from sudosu.core.connection import ConnectionManager
@@ -24,6 +30,8 @@ from sudosu.ui import (
     clear_screen,
     console,
     get_user_input,
+    get_user_input_async,
+    LiveStreamPrinter,
     print_agent_thinking,
     print_consultation_route,
     print_error,
@@ -35,12 +43,14 @@ from sudosu.ui import (
     print_tool_result,
     print_welcome,
     StreamPrinter,
+    COLOR_PRIMARY,
+    COLOR_ACCENT,
 )
 
 
 app = typer.Typer(
     name="sudosu",
-    help="Terminal-based AI Agent Platform",
+    help="Your AI Coworker Platform — AI teammates that actually get work done",
     add_completion=False,
 )
 
@@ -78,6 +88,9 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
     thread_id = session_mgr.get_thread_id()
     session_id = session_mgr.session_id
     
+    # Get user_id for integration tools (Gmail, etc.)
+    user_id = get_user_id()
+    
     # Increment message count
     session_mgr.increment_message_count()
     
@@ -91,7 +104,8 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
         return None
     
     try:
-        stream_printer = StreamPrinter()
+        stream_printer = LiveStreamPrinter()
+        stream_printer.start()
         
         # Define callbacks
         def on_text(content: str):
@@ -155,6 +169,7 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
             cwd=cwd,
             session_id=session_id,
             thread_id=thread_id,
+            user_id=user_id,
             on_text=on_text,
             on_tool_call=on_tool_call,
             on_status=on_status,
@@ -306,6 +321,15 @@ async def handle_command(command: str):
     elif cmd == "/memory":
         await handle_memory_command(args)
     
+    elif cmd == "/connect":
+        await handle_connect_command(" ".join(args))
+    
+    elif cmd == "/disconnect":
+        await handle_disconnect_command(" ".join(args))
+    
+    elif cmd == "/integrations":
+        await handle_integrations_command(" ".join(args))
+    
     elif cmd == "/init":
         if args and args[0] == "project":
             init_project_command()
@@ -350,13 +374,16 @@ async def interactive_session():
     if not is_safe:
         console.print(get_safety_warning(reason))
         console.print("[dim]Press Enter to exit, or type 'continue' to proceed in read-only mode...[/dim]")
-        response = get_user_input("").strip().lower()
+        response = (await get_user_input_async("")).strip().lower()
         if response != "continue":
-            console.print("[yellow]Exiting. Navigate to a project folder and try again.[/yellow]")
+            console.print(f"[{COLOR_ACCENT}]Exiting. Navigate to a project folder and try again.[/{COLOR_ACCENT}]")
             return
-        console.print("[yellow]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/yellow]\n")
+        console.print(f"[{COLOR_ACCENT}]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/{COLOR_ACCENT}]\n")
     
-    print_welcome()
+    # Get system username for personalized welcome
+    import getpass
+    username = getpass.getuser().capitalize()
+    print_welcome(username)
     
     # Get session manager for active agent tracking
     session_mgr = get_session_manager()
@@ -370,7 +397,7 @@ async def interactive_session():
             else:
                 prompt = "> "
             
-            user_input = get_user_input(prompt).strip()
+            user_input = (await get_user_input_async(prompt)).strip()
             
             if not user_input:
                 continue
@@ -399,7 +426,7 @@ async def interactive_session():
                     await invoke_active_agent(user_input, cwd)
                 
         except KeyboardInterrupt:
-            console.print("\n[yellow]Goodbye! 👋[/yellow]")
+            console.print(f"\n[{COLOR_PRIMARY}]Goodbye! 👋[/{COLOR_PRIMARY}]")
             break
         except EOFError:
             break
@@ -412,9 +439,10 @@ def main(
     version: bool = typer.Option(False, "--version", "-v", help="Show version"),
 ):
     """
-    Sudosu - Terminal-based AI Agent Platform
+    Sudosu - Your AI Coworker Platform
     
-    Start an interactive session or run a direct command.
+    Get AI coworkers that can read your files, write code, connect to your tools
+    (Gmail, Calendar, GitHub, Linear, Slack), and actually get work done.
     
     Examples:
         sudosu                          # Start interactive session

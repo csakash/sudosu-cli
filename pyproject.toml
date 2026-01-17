@@ -5,23 +5,25 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sudosu"
 version = "0.1.0"
-description = "Terminal-based AI Agent Platform - Create and interact with custom AI agents"
+description = "Your AI Coworker - AI teammates that can read files, write code, and connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack)"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Akash Munshi"}
 ]
+keywords = ["ai", "assistant", "cli", "automation", "agent", "coworker", "productivity", "llm"]
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business",
+    "Topic :: Communications",
 ]
 dependencies = [
     "typer>=0.9.0",
@@ -31,6 +33,7 @@ dependencies = [
     "python-frontmatter>=1.0.0",
     "httpx>=0.25.0",
     "prompt-toolkit>=3.0.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -45,8 +48,9 @@ dev = [
 sudosu = "sudosu.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/akashmunshi/sudosu"
-Repository = "https://github.com/akashmunshi/sudosu"
+Homepage = "https://github.com/csakash/sudosu-cli"
+Repository = "https://github.com/csakash/sudosu-cli"
+Issues = "https://github.com/csakash/sudosu-cli/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

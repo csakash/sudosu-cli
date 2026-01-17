@@ -8,7 +8,16 @@ memory affects all agents.
 """
 
 from sudosu.core.session import get_session_manager
-from sudosu.ui import console, print_success, print_info, print_error
+from sudosu.ui import (
+    console,
+    print_success,
+    print_info,
+    print_error,
+    COLOR_PRIMARY,
+    COLOR_SECONDARY,
+    COLOR_ACCENT,
+    COLOR_INTERACTIVE,
+)
 
 
 async def handle_memory_command(args: list[str]):
@@ -51,14 +60,14 @@ async def handle_memory_command(args: list[str]):
 
 def _show_session_info(session_mgr):
     """Display current session information."""
-    console.print("\n[bold cyan]📝 Session Info[/bold cyan]")
+    console.print(f"\n[bold {COLOR_SECONDARY}]📝 Session Info[/bold {COLOR_SECONDARY}]")
     console.print(f"  Session ID: [dim]{session_mgr.session_id[:8]}...[/dim]")
     console.print(f"  Thread ID: [dim]{session_mgr.thread_id[:16]}...[/dim]")
-    console.print(f"  Active Agent: [green]@{session_mgr.get_active_agent()}[/green]")
-    console.print(f"  Messages: [yellow]{session_mgr.message_count}[/yellow]")
+    console.print(f"  Active Agent: [{COLOR_INTERACTIVE}]@{session_mgr.get_active_agent()}[/{COLOR_INTERACTIVE}]")
+    console.print(f"  Messages: [{COLOR_PRIMARY}]{session_mgr.message_count}[/{COLOR_PRIMARY}]")
     
     if session_mgr.is_routed:
-        console.print(f"  Status: [cyan]Routed from sudosu[/cyan]")
+        console.print(f"  Status: [{COLOR_INTERACTIVE}]Routed from sudosu[/{COLOR_INTERACTIVE}]")
     
     console.print()
     console.print("[dim]💡 All agents share the same conversation context.[/dim]")
@@ -78,9 +87,9 @@ async def _handle_clear(session_mgr):
 def _show_conversation_details(session_mgr):
     """Show detailed information about the shared conversation."""
     if session_mgr.message_count > 0:
-        console.print(f"\n[bold cyan]💬 Shared Conversation[/bold cyan]")
-        console.print(f"  Active Agent: [green]@{session_mgr.get_active_agent()}[/green]")
-        console.print(f"  Messages exchanged: [yellow]{session_mgr.message_count}[/yellow]")
+        console.print(f"\n[bold {COLOR_SECONDARY}]💬 Shared Conversation[/bold {COLOR_SECONDARY}]")
+        console.print(f"  Active Agent: [{COLOR_INTERACTIVE}]@{session_mgr.get_active_agent()}[/{COLOR_INTERACTIVE}]")
+        console.print(f"  Messages exchanged: [{COLOR_PRIMARY}]{session_mgr.message_count}[/{COLOR_PRIMARY}]")
         console.print(f"  Thread ID: [dim]{session_mgr.thread_id}[/dim]")
         console.print(f"  Session ID: [dim]{session_mgr.session_id}[/dim]")
         
@@ -107,7 +116,7 @@ def _show_conversation_details(session_mgr):
 def _show_active_agent(session_mgr):
     """Show which agent is currently active."""
     active = session_mgr.get_active_agent()
-    console.print(f"\nActive agent: [green]@{active}[/green]")
+    console.print(f"\nActive agent: [{COLOR_INTERACTIVE}]@{active}[/{COLOR_INTERACTIVE}]")
     
     if session_mgr.is_routed:
         console.print("[dim]You were routed here by sudosu.[/dim]")
@@ -125,11 +134,11 @@ def _show_stats(session_mgr):
     """Show session statistics."""
     stats = session_mgr.get_stats()
     
-    console.print("\n[bold cyan]📊 Session Statistics[/bold cyan]")
+    console.print(f"\n[bold {COLOR_SECONDARY}]📊 Session Statistics[/bold {COLOR_SECONDARY}]")
     console.print(f"  Session ID: [dim]{stats['session_id'][:8]}...[/dim]")
     console.print(f"  Thread ID: [dim]{stats['thread_id'][:16]}...[/dim]")
-    console.print(f"  Active Agent: [green]@{stats['active_agent']}[/green]")
-    console.print(f"  Total Messages: [yellow]{stats['message_count']}[/yellow]")
+    console.print(f"  Active Agent: [{COLOR_INTERACTIVE}]@{stats['active_agent']}[/{COLOR_INTERACTIVE}]")
+    console.print(f"  Total Messages: [{COLOR_PRIMARY}]{stats['message_count']}[/{COLOR_PRIMARY}]")
     
     duration = stats["duration_seconds"]
     if duration < 60:
@@ -140,20 +149,20 @@ def _show_stats(session_mgr):
         console.print(f"  Session Duration: {duration/3600:.1f} hours")
     
     if stats["is_routed"]:
-        console.print(f"  Status: [cyan]Routed conversation[/cyan]")
+        console.print(f"  Status: [{COLOR_INTERACTIVE}]Routed conversation[/{COLOR_INTERACTIVE}]")
     
     console.print()
 
 
 def _show_help():
     """Show memory command help."""
-    console.print("\n[bold cyan]Memory Commands[/bold cyan]")
-    console.print("  [green]/memory[/green]        - Show session info and conversation status")
-    console.print("  [green]/memory show[/green]   - Show detailed conversation info")
-    console.print("  [green]/memory clear[/green]  - Clear conversation and start fresh")
-    console.print("  [green]/memory agent[/green]  - Show which agent is currently active")
-    console.print("  [green]/memory stats[/green]  - Show session statistics")
-    console.print("  [green]/memory help[/green]   - Show this help")
+    console.print(f"\n[bold {COLOR_SECONDARY}]Memory Commands[/bold {COLOR_SECONDARY}]")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory[/{COLOR_INTERACTIVE}]        - Show session info and conversation status")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory show[/{COLOR_INTERACTIVE}]   - Show detailed conversation info")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory clear[/{COLOR_INTERACTIVE}]  - Clear conversation and start fresh")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory agent[/{COLOR_INTERACTIVE}]  - Show which agent is currently active")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory stats[/{COLOR_INTERACTIVE}]  - Show session statistics")
+    console.print(f"  [{COLOR_INTERACTIVE}]/memory help[/{COLOR_INTERACTIVE}]   - Show this help")
     console.print()
     console.print("[dim]💡 All agents share the same conversation context.")
     console.print("   When sudosu routes you to a sub-agent, follow-up")
