@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sudosu"
 version = "0.1.0"
-description = "Terminal-based AI Agent Platform - Create and interact with custom AI agents"
+description = "Your AI Coworker - AI teammates that can read files, write code, and connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack)"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [

@@ -148,7 +148,7 @@ def print_help():
         ("/agent delete <name>", "Delete an agent"),
         ("/memory", "Show conversation memory info"),
         ("/memory clear", "Clear conversation (fresh start)"),
-        ("/back", "Return to sudosu from a sub-agent"),
+        ("/back", "Return to sudosu from an agent"),
         ("/config", "Show current configuration"),
         ("/config set <key> <value>", "Set a configuration value"),
         ("/clear", "Clear the screen"),

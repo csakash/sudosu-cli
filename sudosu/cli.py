@@ -1,4 +1,4 @@
-"""Sudosu CLI - Terminal-based AI Agent Platform."""
+"""Sudosu CLI - Your AI Coworker Platform."""
 
 import asyncio
 import os
@@ -50,7 +50,7 @@ from sudosu.ui import (
 
 app = typer.Typer(
     name="sudosu",
-    help="Terminal-based AI Agent Platform",
+    help="Your AI Coworker Platform — AI teammates that actually get work done",
     add_completion=False,
 )
 
@@ -439,9 +439,10 @@ def main(
     version: bool = typer.Option(False, "--version", "-v", help="Show version"),
 ):
     """
-    Sudosu - Terminal-based AI Agent Platform
+    Sudosu - Your AI Coworker Platform
     
-    Start an interactive session or run a direct command.
+    Get AI coworkers that can read your files, write code, connect to your tools
+    (Gmail, Calendar, GitHub, Linear, Slack), and actually get work done.
     
     Examples:
         sudosu                          # Start interactive session

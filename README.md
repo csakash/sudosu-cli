@@ -1,8 +1,10 @@
 # Sudosu 🚀
 
-**Terminal-based AI Agent Platform**
+**Your AI Coworker — Right in Your Terminal**
 
-Create and interact with custom AI agents that run on a hosted backend but use your local terminal as a client. Agents have access to your repository for read/write operations.
+Sudosu gives you AI coworkers that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands — all while you stay in control.
+
+**No more hopping between tools.** Your AI coworker does it all.
 
 ## Installation
 
@@ -28,11 +30,12 @@ sudosu
 
 ## Features
 
--  **Custom Agents**: Create agents with specific personalities and capabilities
-- 📝 **File Operations**: Agents can read and write files in your repository
-- 🔄 **Real-time Streaming**: See agent responses as they're generated
+- 🤖 **AI Coworkers**: Create specialized coworkers with specific personalities and capabilities
+- 🔌 **Tool Integrations**: Connect to Gmail, Calendar, GitHub, Linear, Slack, and more
+- 📝 **File Operations**: Coworkers can read and write files in your repository
+- 🔄 **Real-time Streaming**: See responses as they're generated
 - 🔒 **Local Execution**: File operations happen on your machine, keeping data secure
-- 🎯 **Skills Integration**: Extend agents with reusable skills (coming soon)
+- ⚡ **Action-Oriented**: Your coworkers don't just answer questions — they take action
 
 ## Configuration
 
