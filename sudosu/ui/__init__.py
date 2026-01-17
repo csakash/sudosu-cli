@@ -3,6 +3,7 @@
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
+from rich.markup import escape
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
@@ -166,27 +167,34 @@ def print_agents(agents: list[dict]):
 
 def print_error(message: str):
     """Print error message."""
-    console.print(f"[bold {COLOR_ACCENT}]Error:[/bold {COLOR_ACCENT}] {message}")
+    console.print(f"[bold {COLOR_ACCENT}]Error:[/bold {COLOR_ACCENT}] {escape(message)}")
 
 
 def print_success(message: str):
     """Print success message."""
-    console.print(f"[bold green]✓[/bold green] {message}")
+    console.print(f"[bold {COLOR_INTERACTIVE}]✓[/bold {COLOR_INTERACTIVE}] {escape(message)}")
 
 
 def print_warning(message: str):
     """Print warning message."""
-    console.print(f"[bold {COLOR_ACCENT}]⚠[/bold {COLOR_ACCENT}] {message}")
+    console.print(f"[bold {COLOR_ACCENT}]⚠[/bold {COLOR_ACCENT}] {escape(message)}")
 
 
 def print_info(message: str):
     """Print info message."""
-    console.print(f"[bold {COLOR_INTERACTIVE}]ℹ[/bold {COLOR_INTERACTIVE}] {message}")
+    console.print(f"[bold {COLOR_INTERACTIVE}]ℹ[/bold {COLOR_INTERACTIVE}] {escape(message)}")
 
 
 def print_agent_thinking(agent_name: str):
-    """Print agent thinking indicator."""
-    console.print(f"\n[bold {COLOR_PRIMARY}] {agent_name}[/bold {COLOR_PRIMARY}] thinking...\n")
+    """Print agent thinking indicator.
+    
+    For the default 'sudosu' agent, just shows 'thinking...'
+    For other agents, shows '@agent_name thinking...'
+    """
+    if agent_name.lower() == "sudosu":
+        console.print(f"\n[bold {COLOR_PRIMARY}]thinking...[/bold {COLOR_PRIMARY}]\n")
+    else:
+        console.print(f"\n[bold {COLOR_PRIMARY}]@{agent_name}[/bold {COLOR_PRIMARY}] is thinking...\n")
 
 
 def print_routing_to_agent(agent_name: str):
@@ -223,7 +231,7 @@ def print_tool_result(tool_name: str, result: dict):
     """Print tool execution result."""
     if result.get("success"):
         if tool_name == "write_file":
-            console.print(f"[green]✓ File saved: {result.get('path', 'unknown')}[/green]")
+            console.print(f"[{COLOR_INTERACTIVE}]✓ File saved: {result.get('path', 'unknown')}[/{COLOR_INTERACTIVE}]")
         elif tool_name == "read_file":
             # Don't print content, it goes to the agent
             pass
@@ -231,7 +239,7 @@ def print_tool_result(tool_name: str, result: dict):
             # Don't print listing, it goes to the agent
             pass
     elif "error" in result:
-        console.print(f"[red]✗ {result['error']}[/red]")
+        console.print(f"[{COLOR_ACCENT}]✗ {result['error']}[/{COLOR_ACCENT}]")
 
 
 def print_markdown(content: str):

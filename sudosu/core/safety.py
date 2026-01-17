@@ -3,6 +3,13 @@
 from pathlib import Path
 
 
+# Import brand colors - using hex values directly to avoid circular imports
+COLOR_PRIMARY = "#FEEAC9"
+COLOR_SECONDARY = "#FFCDC9"
+COLOR_ACCENT = "#FD7979"
+COLOR_INTERACTIVE = "#BDE3C3"
+
+
 def is_safe_directory(cwd: Path = None) -> tuple[bool, str]:
     """
     Check if the current directory is safe for Sudosu operations.
@@ -39,23 +46,23 @@ def is_safe_directory(cwd: Path = None) -> tuple[bool, str]:
 def get_safety_warning(reason: str) -> str:
     """Get a warning message for unsafe directories."""
     return f"""
-⚠️  [bold yellow]Sudosu Safety Warning[/bold yellow]
+⚠️  [bold {COLOR_ACCENT}]Sudosu Safety Warning[/bold {COLOR_ACCENT}]
 
 You are running Sudosu from your [bold]{reason}[/bold].
 
-For security reasons, Sudosu agents can [bold red]read and write files[/bold red] in your 
+For security reasons, Sudosu agents can [bold {COLOR_ACCENT}]read and write files[/bold {COLOR_ACCENT}] in your 
 current directory. Running from this location could expose sensitive files
 or cause unintended modifications.
 
-[bold cyan]📁 Recommended Actions:[/bold cyan]
+[bold {COLOR_SECONDARY}]📁 Recommended Actions:[/bold {COLOR_SECONDARY}]
 
-  1. [green]Create a project folder:[/green]
+  1. [{COLOR_INTERACTIVE}]Create a project folder:[/{COLOR_INTERACTIVE}]
      [dim]mkdir ~/my-project && cd ~/my-project[/dim]
      
-  2. [green]Or navigate to an existing project:[/green]
+  2. [{COLOR_INTERACTIVE}]Or navigate to an existing project:[/{COLOR_INTERACTIVE}]
      [dim]cd ~/projects/my-app[/dim]
      
-  3. [green]Then run Sudosu:[/green]
+  3. [{COLOR_INTERACTIVE}]Then run Sudosu:[/{COLOR_INTERACTIVE}]
      [dim]sudosu[/dim]
 
 [dim]Sudosu will only operate within the folder you start it from.[/dim]

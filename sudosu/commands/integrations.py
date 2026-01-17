@@ -18,6 +18,10 @@ from sudosu.ui import (
     print_info,
     print_success,
     print_warning,
+    COLOR_PRIMARY,
+    COLOR_SECONDARY,
+    COLOR_ACCENT,
+    COLOR_INTERACTIVE,
 )
 
 
@@ -221,11 +225,11 @@ async def handle_connect_command(args: str = ""):
     # If no integration specified, show available options
     if not parts:
         console.print()
-        console.print("[bold cyan]━━━ Available Integrations ━━━[/bold cyan]")
+        console.print(f"[bold {COLOR_SECONDARY}]━━━ Available Integrations ━━━[/bold {COLOR_SECONDARY}]")
         console.print()
         for toolkit in available:
             display_name = get_display_name(toolkit)
-            console.print(f"  • [cyan]{toolkit}[/cyan] - {display_name}")
+            console.print(f"  • [{COLOR_INTERACTIVE}]{toolkit}[/{COLOR_INTERACTIVE}] - {display_name}")
         console.print()
         console.print("[dim]Usage: /connect <integration>[/dim]")
         console.print("[dim]Example: /connect slack[/dim]")
@@ -278,7 +282,7 @@ async def handle_connect_command(args: str = ""):
         pass  # URL already displayed above
     
     # Poll for completion
-    console.print("[yellow]Waiting for authorization...[/yellow]", end="")
+    console.print(f"[{COLOR_PRIMARY}]Waiting for authorization...[/{COLOR_PRIMARY}]", end="")
     
     connected = False
     timeout = 120  # 2 minutes
@@ -286,7 +290,7 @@ async def handle_connect_command(args: str = ""):
     start_time = time.time()
     
     while time.time() - start_time < timeout:
-        console.print(".", end="", style="yellow")
+        console.print(".", end="", style=COLOR_PRIMARY)
         
         status = await check_integration_status(integration)
         if status.get("connected"):
@@ -378,11 +382,11 @@ async def handle_disconnect_command(args: str = ""):
             return
         
         console.print()
-        console.print("[bold cyan]━━━ Connected Integrations ━━━[/bold cyan]")
+        console.print(f"[bold {COLOR_SECONDARY}]━━━ Connected Integrations ━━━[/bold {COLOR_SECONDARY}]")
         console.print()
         for toolkit in connected:
             display_name = get_display_name(toolkit)
-            console.print(f"  • [green]{toolkit}[/green] - {display_name}")
+            console.print(f"  • [{COLOR_INTERACTIVE}]{toolkit}[/{COLOR_INTERACTIVE}] - {display_name}")
         console.print()
         console.print("[dim]Usage: /disconnect <integration>[/dim]")
         console.print("[dim]Example: /disconnect slack[/dim]")
@@ -471,7 +475,7 @@ async def handle_integrations_command(args: str = ""):  # noqa: ARG001
             is_connected = item.get("connected", False)
             
             if is_connected:
-                console.print(f"  [green]●[/green] {name}: [green]Connected[/green]")
+                console.print(f"  [{COLOR_INTERACTIVE}]●[/{COLOR_INTERACTIVE}] {name}: [{COLOR_INTERACTIVE}]Connected[/{COLOR_INTERACTIVE}]")
             else:
                 console.print(f"  [dim]○[/dim] {name}: [dim]Not connected[/dim]")
     else:
@@ -481,13 +485,13 @@ async def handle_integrations_command(args: str = ""):  # noqa: ARG001
             status = await check_integration_status(toolkit)
             
             if status.get("connected"):
-                console.print(f"  [green]●[/green] {display_name}: [green]Connected[/green]")
+                console.print(f"  [{COLOR_INTERACTIVE}]●[/{COLOR_INTERACTIVE}] {display_name}: [{COLOR_INTERACTIVE}]Connected[/{COLOR_INTERACTIVE}]")
             else:
                 console.print(f"  [dim]○[/dim] {display_name}: [dim]Not connected[/dim]")
     
     # Show tool registry info
     console.print()
-    console.print("[bold cyan]━━━ Tool Registry ━━━[/bold cyan]")
+    console.print(f"[bold {COLOR_SECONDARY}]━━━ Tool Registry ━━━[/bold {COLOR_SECONDARY}]")
     console.print()
     
     registry_info = await get_registry_info()
@@ -508,7 +512,7 @@ async def handle_integrations_command(args: str = ""):  # noqa: ARG001
                 tool_count = item.get("tool_count", 0)
                 capabilities = item.get("capabilities", [])[:3]
                 
-                console.print(f"  • [cyan]{display_name}[/cyan]: {tool_count} tools")
+                console.print(f"  • [{COLOR_INTERACTIVE}]{display_name}[/{COLOR_INTERACTIVE}]: {tool_count} tools")
                 if capabilities:
                     caps_str = ", ".join(capabilities[:3])
                     console.print(f"    [dim]Capabilities: {caps_str}[/dim]")

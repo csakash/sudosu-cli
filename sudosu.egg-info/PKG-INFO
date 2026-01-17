@@ -24,6 +24,7 @@ Requires-Dist: pyyaml>=6.0
 Requires-Dist: python-frontmatter>=1.0.0
 Requires-Dist: httpx>=0.25.0
 Requires-Dist: prompt-toolkit>=3.0.0
+Requires-Dist: python-dotenv>=1.0.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
@@ -60,7 +61,7 @@ sudosu
 
 ## Features
 
-- 🤖 **Custom Agents**: Create agents with specific personalities and capabilities
+-  **Custom Agents**: Create agents with specific personalities and capabilities
 - 📝 **File Operations**: Agents can read and write files in your repository
 - 🔄 **Real-time Streaming**: See agent responses as they're generated
 - 🔒 **Local Execution**: File operations happen on your machine, keeping data secure
@@ -68,11 +69,33 @@ sudosu
 
 ## Configuration
 
+### Environment Modes
+
+Sudosu supports **dev** and **prod** modes for easy switching between local and production backends:
+
+```bash
+# Development mode (local backend)
+export SUDOSU_MODE=dev
+sudosu
+
+# Production mode (default)
+export SUDOSU_MODE=prod
+sudosu
+
+# Or switch within CLI
+/config mode dev   # Switch to development
+/config mode prod  # Switch to production
+```
+
+See [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) for detailed configuration options.
+
+### Configuration Files
+
 Sudosu stores configuration in `~/.sudosu/`:
 
 ```
 ~/.sudosu/
-├── config.yaml     # API keys, backend URL, preferences
+├── config.yaml     # API keys, backend URL, preferences, mode
 ├── agents/         # Global agent definitions
 └── skills/         # Global skills library
 ```

@@ -1,7 +1,15 @@
 """Config command handler."""
 
 from sudosu.core import load_config, set_config_value, get_mode, set_mode, get_backend_url
-from sudosu.ui import console, print_error, print_info, print_success
+from sudosu.ui import (
+    console,
+    print_error,
+    print_info,
+    print_success,
+    COLOR_PRIMARY,
+    COLOR_SECONDARY,
+    COLOR_INTERACTIVE,
+)
 
 
 def show_config():
@@ -13,8 +21,8 @@ def show_config():
     console.print("\n[bold]Current Configuration:[/bold]\n")
     
     # Show mode first
-    console.print(f"  [cyan]mode[/cyan]: [bold]{current_mode}[/bold] (active)")
-    console.print(f"  [cyan]active_backend_url[/cyan]: {current_url}\n")
+    console.print(f"  [{COLOR_INTERACTIVE}]mode[/{COLOR_INTERACTIVE}]: [bold]{current_mode}[/bold] (active)")
+    console.print(f"  [{COLOR_INTERACTIVE}]active_backend_url[/{COLOR_INTERACTIVE}]: {current_url}\n")
     
     for key, value in config.items():
         # Mask API key
@@ -23,7 +31,7 @@ def show_config():
         else:
             display_value = value
         
-        console.print(f"  [cyan]{key}[/cyan]: {display_value}")
+        console.print(f"  [{COLOR_INTERACTIVE}]{key}[/{COLOR_INTERACTIVE}]: {display_value}")
     
     console.print()
     console.print("[dim]Tip: Use '/config mode dev' or '/config mode prod' to switch environments[/dim]\n")

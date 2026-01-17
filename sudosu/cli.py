@@ -42,6 +42,8 @@ from sudosu.ui import (
     print_tool_result,
     print_welcome,
     StreamPrinter,
+    COLOR_PRIMARY,
+    COLOR_ACCENT,
 )
 
 
@@ -373,9 +375,9 @@ async def interactive_session():
         console.print("[dim]Press Enter to exit, or type 'continue' to proceed in read-only mode...[/dim]")
         response = get_user_input("").strip().lower()
         if response != "continue":
-            console.print("[yellow]Exiting. Navigate to a project folder and try again.[/yellow]")
+            console.print(f"[{COLOR_ACCENT}]Exiting. Navigate to a project folder and try again.[/{COLOR_ACCENT}]")
             return
-        console.print("[yellow]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/yellow]\n")
+        console.print(f"[{COLOR_ACCENT}]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/{COLOR_ACCENT}]\n")
     
     # Get system username for personalized welcome
     import getpass
@@ -423,7 +425,7 @@ async def interactive_session():
                     await invoke_active_agent(user_input, cwd)
                 
         except KeyboardInterrupt:
-            console.print("\n[yellow]Goodbye! 👋[/yellow]")
+            console.print(f"\n[{COLOR_PRIMARY}]Goodbye! 👋[/{COLOR_PRIMARY}]")
             break
         except EOFError:
             break
