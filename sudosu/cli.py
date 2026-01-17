@@ -30,6 +30,7 @@ from sudosu.ui import (
     clear_screen,
     console,
     get_user_input,
+    LiveStreamPrinter,
     print_agent_thinking,
     print_consultation_route,
     print_error,
@@ -100,7 +101,8 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
         return None
     
     try:
-        stream_printer = StreamPrinter()
+        stream_printer = LiveStreamPrinter()
+        stream_printer.start()
         
         # Define callbacks
         def on_text(content: str):

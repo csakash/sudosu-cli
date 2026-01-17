@@ -1,6 +1,7 @@
 """Console UI helpers for Sudosu."""
 
 from rich.console import Console
+from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -178,26 +179,96 @@ def create_spinner(message: str = "Processing..."):
 
 
 class StreamPrinter:
-    """Handles streaming text output."""
+    """Handles streaming text output with markdown rendering support.
     
-    def __init__(self):
+    Modes:
+    - render_markdown=True, show_streaming=False: Buffer all, render markdown at end (cleanest)
+    - render_markdown=True, show_streaming=True: Show raw stream then render markdown (redundant but shows activity)
+    - render_markdown=False: Print raw text as it streams (no formatting)
+    """
+    
+    def __init__(self, render_markdown: bool = True, show_streaming: bool = False):
         self.buffer = ""
-        self.in_code_block = False
-        self.code_language = ""
-        self.code_buffer = ""
+        self.render_markdown = render_markdown
+        self.show_streaming = show_streaming
+        self._chunk_count = 0
     
     def print_chunk(self, chunk: str):
         """Print a chunk of streaming text."""
-        # For now, just print directly
-        # TODO: Buffer and handle markdown rendering
-        console.print(chunk, end="")
+        self._chunk_count += 1
+        
+        if self.render_markdown:
+            # Buffer for final markdown rendering
+            self.buffer += chunk
+            
+            if self.show_streaming:
+                # Also show raw text as it streams (dimmed)
+                console.print(chunk, end="", style="dim")
+        else:
+            # Raw mode: print directly without markdown processing
+            console.print(chunk, end="")
     
     def flush(self):
-        """Flush any remaining buffer."""
+        """Flush buffer and render as markdown."""
         if self.buffer:
-            console.print(self.buffer, end="")
+            if self.render_markdown:
+                if self.show_streaming:
+                    # Add visual separator before formatted version
+                    console.print("\n")
+                    console.rule(style="dim blue")
+                    console.print()
+                
+                # Render the complete response as formatted markdown
+                md = Markdown(self.buffer.strip())
+                console.print(md)
+            else:
+                # Just ensure newline at end for raw mode
+                pass
             self.buffer = ""
-        console.print()  # New line at end
+        console.print()  # Final newline
+
+
+class LiveStreamPrinter:
+    """Streams text with live-updating markdown rendering.
+    
+    Uses Rich's Live display to progressively render markdown as chunks arrive.
+    Provides the best experience: see formatted output as it streams.
+    """
+    
+    def __init__(self):
+        self.buffer = ""
+        self._live: Live | None = None
+    
+    def start(self):
+        """Start live display."""
+        self._live = Live(
+            Markdown(""),
+            console=console,
+            refresh_per_second=10,
+            vertical_overflow="visible",
+        )
+        self._live.start()
+    
+    def print_chunk(self, chunk: str):
+        """Add chunk and update live markdown display."""
+        self.buffer += chunk
+        if self._live:
+            # Re-render markdown with updated content
+            self._live.update(Markdown(self.buffer))
+    
+    def flush(self):
+        """Stop live display and print final output."""
+        if self._live:
+            self._live.stop()
+            self._live = None
+        console.print()  # Final newline
+    
+    def __enter__(self):
+        self.start()
+        return self
+    
+    def __exit__(self, *args):
+        self.flush()
 
 
 def get_user_input(prompt: str = "> ") -> str:
