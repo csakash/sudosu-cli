@@ -5,9 +5,9 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Downloads](https://pepy.tech/badge/sudosu)](https://pepy.tech/project/sudosu)
 
-**Your AI Coworker — Right in Your Terminal**
+**Your AI Coworker - Right in Your Terminal**
 
-Sudosu gives you AI coworkers that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands — all while you stay in control.
+Sudosu gives you AI coworkers that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands - all while you stay in control.
 
 **No more hopping between tools.** Your AI coworker does it all.
 
