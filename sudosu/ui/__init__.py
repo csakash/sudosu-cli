@@ -167,22 +167,22 @@ def print_agents(agents: list[dict]):
 
 def print_error(message: str):
     """Print error message."""
-    console.print(f"[bold {COLOR_ACCENT}]Error:[/bold {COLOR_ACCENT}] {escape(message)}")
+    console.print(f"[bold {COLOR_ACCENT}]Error:[/bold {COLOR_ACCENT}] {escape(message)}", highlight=False)
 
 
 def print_success(message: str):
     """Print success message."""
-    console.print(f"[bold {COLOR_INTERACTIVE}]✓[/bold {COLOR_INTERACTIVE}] {escape(message)}")
+    console.print(f"[bold {COLOR_INTERACTIVE}]✓[/bold {COLOR_INTERACTIVE}] {escape(message)}", highlight=False)
 
 
 def print_warning(message: str):
     """Print warning message."""
-    console.print(f"[bold {COLOR_ACCENT}]⚠[/bold {COLOR_ACCENT}] {escape(message)}")
+    console.print(f"[bold {COLOR_ACCENT}]⚠[/bold {COLOR_ACCENT}] {escape(message)}", highlight=False)
 
 
 def print_info(message: str):
     """Print info message."""
-    console.print(f"[bold {COLOR_INTERACTIVE}]ℹ[/bold {COLOR_INTERACTIVE}] {escape(message)}")
+    console.print(f"[bold {COLOR_INTERACTIVE}]ℹ[/bold {COLOR_INTERACTIVE}] {escape(message)}", highlight=False)
 
 
 def print_agent_thinking(agent_name: str):

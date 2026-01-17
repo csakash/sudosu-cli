@@ -203,8 +203,8 @@ You are {description.lower()}.
             description=description,
             system_prompt=system_prompt,
         )
-        print_success(f"Agent '{name}' created at {agent_path}")
-        print_info(f"Use @{name} to start chatting")
+        console.print(f"[{COLOR_INTERACTIVE}]✓[/{COLOR_INTERACTIVE}] Agent [{COLOR_PRIMARY}]'{name}'[/{COLOR_PRIMARY}] created at {agent_path}", highlight=False)
+        console.print(f"[{COLOR_INTERACTIVE}]ℹ[/{COLOR_INTERACTIVE}] Use [{COLOR_PRIMARY}]@{name}[/{COLOR_PRIMARY}] to start chatting", highlight=False)
     except Exception as e:
         print_error(f"Failed to create agent: {e}")
 
@@ -240,7 +240,7 @@ async def delete_agent_command(name: Optional[str] = None):
     import shutil
     try:
         shutil.rmtree(agent_path)
-        print_success(f"Agent '{name}' deleted")
+        console.print(f"[{COLOR_INTERACTIVE}]✓[/{COLOR_INTERACTIVE}] Agent [{COLOR_PRIMARY}]'{name}'[/{COLOR_PRIMARY}] deleted", highlight=False)
     except Exception as e:
         print_error(f"Failed to delete agent: {e}")
 
