@@ -1,22 +1,26 @@
 Metadata-Version: 2.4
 Name: sudosu
 Version: 0.1.0
-Summary: Terminal-based AI Agent Platform - Create and interact with custom AI agents
+Summary: Your AI Coworker - AI teammates that can read files, write code, and connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack)
 Author: Akash Munshi
-License: MIT
-Project-URL: Homepage, https://github.com/akashmunshi/sudosu
-Project-URL: Repository, https://github.com/akashmunshi/sudosu
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/csakash/sudosu-cli
+Project-URL: Repository, https://github.com/csakash/sudosu-cli
+Project-URL: Issues, https://github.com/csakash/sudosu-cli/issues
+Keywords: ai,assistant,cli,automation,agent,coworker,productivity,llm
 Classifier: Development Status :: 3 - Alpha
 Classifier: Environment :: Console
 Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Office/Business
+Classifier: Topic :: Communications
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: typer>=0.9.0
 Requires-Dist: rich>=13.0.0
 Requires-Dist: websockets>=12.0
@@ -30,12 +34,15 @@ Requires-Dist: pytest>=7.0.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
 Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: ruff>=0.1.0; extra == "dev"
+Dynamic: license-file
 
 # Sudosu 🚀
 
-**Terminal-based AI Agent Platform**
+**Your AI Coworker — Right in Your Terminal**
 
-Create and interact with custom AI agents that run on a hosted backend but use your local terminal as a client. Agents have access to your repository for read/write operations.
+Sudosu gives you AI coworkers that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands — all while you stay in control.
+
+**No more hopping between tools.** Your AI coworker does it all.
 
 ## Installation
 
@@ -61,11 +68,12 @@ sudosu
 
 ## Features
 
--  **Custom Agents**: Create agents with specific personalities and capabilities
-- 📝 **File Operations**: Agents can read and write files in your repository
-- 🔄 **Real-time Streaming**: See agent responses as they're generated
+- 🤖 **AI Coworkers**: Create specialized coworkers with specific personalities and capabilities
+- 🔌 **Tool Integrations**: Connect to Gmail, Calendar, GitHub, Linear, Slack, and more
+- 📝 **File Operations**: Coworkers can read and write files in your repository
+- 🔄 **Real-time Streaming**: See responses as they're generated
 - 🔒 **Local Execution**: File operations happen on your machine, keeping data secure
-- 🎯 **Skills Integration**: Extend agents with reusable skills (coming soon)
+- ⚡ **Action-Oriented**: Your coworkers don't just answer questions — they take action
 
 ## Configuration
 

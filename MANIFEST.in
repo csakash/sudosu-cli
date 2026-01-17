@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+recursive-include sudosu *.py
+exclude .env
+exclude .env.example
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude *.pyo
