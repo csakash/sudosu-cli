@@ -19,3 +19,8 @@ ENV/
 # IDE
 .vscode/
 .idea/
+
+# Environment variables
+.env
+.env.local
+.env.*.local

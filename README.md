@@ -36,11 +36,33 @@ sudosu
 
 ## Configuration
 
+### Environment Modes
+
+Sudosu supports **dev** and **prod** modes for easy switching between local and production backends:
+
+```bash
+# Development mode (local backend)
+export SUDOSU_MODE=dev
+sudosu
+
+# Production mode (default)
+export SUDOSU_MODE=prod
+sudosu
+
+# Or switch within CLI
+/config mode dev   # Switch to development
+/config mode prod  # Switch to production
+```
+
+See [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) for detailed configuration options.
+
+### Configuration Files
+
 Sudosu stores configuration in `~/.sudosu/`:
 
 ```
 ~/.sudosu/
-├── config.yaml     # API keys, backend URL, preferences
+├── config.yaml     # API keys, backend URL, preferences, mode
 ├── agents/         # Global agent definitions
 └── skills/         # Global skills library
 ```
