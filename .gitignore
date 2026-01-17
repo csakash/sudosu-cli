@@ -8,6 +8,7 @@ __pycache__/
 
 # Python egg files
 *.egg-info/
+sudosu.egg-info/
 dist/
 build/
 
