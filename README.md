@@ -28,7 +28,7 @@ sudosu
 
 ## Features
 
-- 🤖 **Custom Agents**: Create agents with specific personalities and capabilities
+-  **Custom Agents**: Create agents with specific personalities and capabilities
 - 📝 **File Operations**: Agents can read and write files in your repository
 - 🔄 **Real-time Streaming**: See agent responses as they're generated
 - 🔒 **Local Execution**: File operations happen on your machine, keeping data secure

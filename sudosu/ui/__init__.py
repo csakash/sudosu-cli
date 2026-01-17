@@ -12,25 +12,103 @@ from rich.text import Text
 
 console = Console()
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SUDOSU BRAND COLORS
+# ══════════════════════════════════════════════════════════════════════════════
+COLOR_PRIMARY = "#FEEAC9"      # Warm cream/peach - Logo, main headings
+COLOR_SECONDARY = "#FFCDC9"    # Light coral/pink - Section headings
+COLOR_ACCENT = "#FD7979"       # Coral red - Warnings, important highlights
+COLOR_INTERACTIVE = "#BDE3C3"  # Light blue - Commands, agent names, interactive elements
 
-def print_welcome():
-    """Print welcome message."""
+# Sudosu ASCII Art Logo
+SUDOSU_LOGO = """
+       ⣀⣀⣀⣀⣀⣀⣀⣀⣀       
+    ⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦    
+   ⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷   
+  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿  
+  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿  
+ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ 
+ ⣿⣿⣿⣿⡿⠋⠁⠈⠙⢿⡿⠋⠁⠈⠻⣿⣿⣿⣿ 
+ ⣿⣿⣿⣿⡇⠀⣿⣿⠀⢸⡇⠀⣿⣿⠀⢸⣿⣿⣿ 
+ ⣿⣿⣿⣿⣷⣄⣀⣀⣠⣾⣷⣄⣀⣀⣠⣾⣿⣿⣿ 
+ ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ 
+  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿  
+  ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿  
+   ⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟   
+    ⠙⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠋    
+       ⠉⠉⠉⠉⠉⠉⠉⠉⠉       
+"""
+
+# Simpler fallback ASCII logo using basic characters
+# Matches the Sudosu logo: filled body with hollow circular eyes and connected ears
+SUDOSU_LOGO_SIMPLE = """
+    ▄▄      ▄▄
+    ██▀▀▀▀▀▀▀▀██
+    ████  ██  ████
+    ██████████████
+    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+"""
+
+
+def get_version() -> str:
+    """Get Sudosu version."""
+    try:
+        from importlib.metadata import version
+        return version("sudosu")
+    except Exception:
+        return "0.1.0"
+
+
+def print_welcome(username: str = "User"):
+    """Print welcome message with ASCII art logo - Claude Code style."""
     console.print()
-    console.print(Panel.fit(
-        "[bold blue]Welcome to Sudosu[/bold blue] 🚀\n"
-        "[dim]Terminal-based AI Agent Platform[/dim]",
-        border_style="blue",
-    ))
-    console.print()
-    console.print("[dim]Just type a message to chat, or use @agent_name for specific agents[/dim]")
-    console.print("[dim]Type /help for commands[/dim]")
+    
+    # Create the welcome box similar to Claude Code
+    version = get_version()
+    
+    # Create a table for the layout (left: welcome + logo, right: tips)
+    layout_table = Table.grid(padding=(0, 4))
+    layout_table.add_column(justify="center", width=35)  # Left column for welcome + logo
+    layout_table.add_column(justify="left")  # Right column for tips
+    
+    # Build left side content
+    left_content = Text()
+    left_content.append(f"Welcome back {username}!\n\n", style="bold white")
+    left_content.append(SUDOSU_LOGO_SIMPLE, style=f"bold {COLOR_PRIMARY}")  # Primary color for logo
+    left_content.append(f"\nv{version}", style="dim")
+    
+    # Build right side content (tips and recent activity)
+    right_content = Text()
+    right_content.append("Tips for getting started\n", style=f"bold {COLOR_SECONDARY}")  # Secondary for headings
+    right_content.append("Type a message to chat with your AI agent\n", style="white")
+    right_content.append("Use ", style="white")
+    right_content.append("@agent_name", style=f"{COLOR_INTERACTIVE}")  # Interactive color for commands
+    right_content.append(" to switch agents\n", style="white")
+    right_content.append("Type ", style="white")
+    right_content.append("/help", style=f"{COLOR_INTERACTIVE}")
+    right_content.append(" for all commands\n\n", style="white")
+    right_content.append("Recent activity\n", style=f"bold {COLOR_SECONDARY}")
+    right_content.append("No recent activity", style="dim")
+    
+    layout_table.add_row(left_content, right_content)
+    
+    # Wrap in a panel with the title
+    panel = Panel(
+        layout_table,
+        title=f"[bold {COLOR_PRIMARY}]Sudosu v{version}[/bold {COLOR_PRIMARY}]",
+        title_align="left",
+        border_style=COLOR_PRIMARY,
+        padding=(1, 2),
+    )
+    
+    console.print(panel)
     console.print()
 
 
 def print_help():
     """Print help message."""
-    table = Table(title="Sudosu Commands", border_style="blue")
-    table.add_column("Command", style="cyan")
+    table = Table(title="Sudosu Commands", border_style=COLOR_PRIMARY, title_style=f"bold {COLOR_PRIMARY}")
+    table.add_column("Command", style=COLOR_INTERACTIVE)
     table.add_column("Description")
     
     commands = [
@@ -59,19 +137,19 @@ def print_help():
         table.add_row(cmd, desc)
     
     console.print(table)
-    console.print("\n[dim]💡 Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
+    console.print(f"\n[dim]💡 Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
 
 
 def print_agents(agents: list[dict]):
     """Print list of available agents in the current project."""
     if not agents:
-        console.print("[yellow]No agents found in this project.[/yellow]")
-        console.print("[dim]Create one with /agent create <name>[/dim]")
+        console.print(f"[{COLOR_ACCENT}]No agents found in this project.[/{COLOR_ACCENT}]")
+        console.print(f"[dim]Create one with [{COLOR_INTERACTIVE}]/agent create <name>[/{COLOR_INTERACTIVE}][/dim]")
         console.print("[dim]Or type a message to chat with the default Sudosu assistant.[/dim]")
         return
     
-    table = Table(title="Available Agents", border_style="green")
-    table.add_column("Name", style="cyan")
+    table = Table(title="Available Agents", border_style=COLOR_PRIMARY, title_style=f"bold {COLOR_PRIMARY}")
+    table.add_column("Name", style=COLOR_INTERACTIVE)
     table.add_column("Description")
     table.add_column("Model", style="dim")
     
@@ -88,7 +166,7 @@ def print_agents(agents: list[dict]):
 
 def print_error(message: str):
     """Print error message."""
-    console.print(f"[bold red]Error:[/bold red] {message}")
+    console.print(f"[bold {COLOR_ACCENT}]Error:[/bold {COLOR_ACCENT}] {message}")
 
 
 def print_success(message: str):
@@ -98,28 +176,28 @@ def print_success(message: str):
 
 def print_warning(message: str):
     """Print warning message."""
-    console.print(f"[bold yellow]⚠[/bold yellow] {message}")
+    console.print(f"[bold {COLOR_ACCENT}]⚠[/bold {COLOR_ACCENT}] {message}")
 
 
 def print_info(message: str):
     """Print info message."""
-    console.print(f"[bold blue]ℹ[/bold blue] {message}")
+    console.print(f"[bold {COLOR_INTERACTIVE}]ℹ[/bold {COLOR_INTERACTIVE}] {message}")
 
 
 def print_agent_thinking(agent_name: str):
     """Print agent thinking indicator."""
-    console.print(f"\n[bold cyan]🤖 {agent_name}[/bold cyan] is thinking...\n")
+    console.print(f"\n[bold {COLOR_PRIMARY}] {agent_name}[/bold {COLOR_PRIMARY}] thinking...\n")
 
 
 def print_routing_to_agent(agent_name: str):
     """Print routing transition message."""
-    console.print(f"\n[bold cyan]→ Routing to @{agent_name}...[/bold cyan]\n")
+    console.print(f"\n[bold {COLOR_INTERACTIVE}]→ Routing to @{agent_name}...[/bold {COLOR_INTERACTIVE}]\n")
 
 
 def print_consultation_route(from_agent: str, to_agent: str, reason: str):
     """Print consultation routing message."""
     console.print(f"\n[dim]💭 @{from_agent} consulted the orchestrator...[/dim]")
-    console.print(f"[bold cyan]→ Handing off to @{to_agent}[/bold cyan]")
+    console.print(f"[bold {COLOR_INTERACTIVE}]→ Handing off to @{to_agent}[/bold {COLOR_INTERACTIVE}]")
     console.print(f"[dim]   Reason: {reason}[/dim]\n")
 
 
@@ -273,7 +351,7 @@ class LiveStreamPrinter:
 
 def get_user_input(prompt: str = "> ") -> str:
     """Get user input with styled prompt."""
-    return console.input(f"[bold green]{prompt}[/bold green]")
+    return console.input(f"[bold {COLOR_PRIMARY}]{prompt}[/bold {COLOR_PRIMARY}]")
 
 
 def get_user_confirmation(message: str) -> bool:

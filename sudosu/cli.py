@@ -377,7 +377,10 @@ async def interactive_session():
             return
         console.print("[yellow]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/yellow]\n")
     
-    print_welcome()
+    # Get system username for personalized welcome
+    import getpass
+    username = getpass.getuser().capitalize()
+    print_welcome(username)
     
     # Get session manager for active agent tracking
     session_mgr = get_session_manager()
