@@ -1,5 +1,10 @@
 # Sudosu 🚀
 
+[![PyPI version](https://badge.fury.io/py/sudosu.svg)](https://badge.fury.io/py/sudosu)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Downloads](https://pepy.tech/badge/sudosu)](https://pepy.tech/project/sudosu)
+
 **Your AI Coworker — Right in Your Terminal**
 
 Sudosu gives you AI coworkers that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands — all while you stay in control.
@@ -25,7 +30,8 @@ sudosu
 /agent create writer
 
 # Use the agent
-@writer help me write a blog on AI in 2026
+Go through my slack channel product-team and summarise the messages from yesterday 
+and plan tickets in Linear
 ```
 
 ## Features
