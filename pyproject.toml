@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sudosu"
 version = "0.1.1"
-description = "Your AI Coworker - AI teammates that can read files, write code, and connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack)"
+description = "Your AI Coworker - that can actually get work done. Unlike chatbots that just talk, these teammates can read your files, write code, create documents, connect to all your tools (Gmail, Calendar, GitHub, Linear, Slack), and run commands - all while you stay in control"
 readme = "README.md"
 license = "MIT"
 authors = [
