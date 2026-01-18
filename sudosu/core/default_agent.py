@@ -295,13 +295,61 @@ def format_agent_for_routing(agent: dict) -> str:
     return result
 
 
-def get_default_agent_config(available_agents: list = None, cwd: str = "") -> dict:
+def format_user_context_for_prompt(profile: dict) -> str:
+    """Format user profile for inclusion in system prompt.
+    
+    Args:
+        profile: User profile dictionary from onboarding
+        
+    Returns:
+        Formatted string for system prompt, or empty string if no profile
+    """
+    if not profile:
+        return ""
+    
+    parts = ["## About the User\n"]
+    
+    name = profile.get("name")
+    if name:
+        parts.append(f"- **Name**: {name} (use their name when appropriate)")
+    
+    email = profile.get("email")
+    if email:
+        parts.append(f"- **Email**: {email}")
+    
+    role = profile.get("role")
+    if role:
+        parts.append(f"- **Role**: {role}")
+    
+    work = profile.get("work_context")
+    if work:
+        parts.append(f"- **Works on**: {work}")
+    
+    goals = profile.get("goals")
+    if goals:
+        parts.append(f"- **Goals with Sudosu**: {goals}")
+    
+    tools = profile.get("daily_tools", [])
+    if tools:
+        parts.append(f"- **Uses**: {', '.join(tools)}")
+    
+    parts.append("\n**Personalization Guidelines**:")
+    parts.append("- Address the user by name occasionally (not every message)")
+    parts.append("- Tailor suggestions based on their role and goals")
+    parts.append("- Proactively suggest relevant integrations they use")
+    parts.append("- Keep communication style appropriate for their role")
+    
+    return "\n".join(parts)
+
+
+def get_default_agent_config(available_agents: list = None, cwd: str = "", user_profile: dict = None) -> dict:
     """
     Get the default agent config with dynamic context.
     
     Args:
         available_agents: List of available agent configurations
         cwd: Current working directory
+        user_profile: User profile from onboarding (optional)
     
     Returns:
         Complete agent configuration dict
@@ -325,11 +373,29 @@ def get_default_agent_config(available_agents: list = None, cwd: str = "") -> di
     from pathlib import Path
     project_name = Path(cwd).name if cwd else "Unknown"
     
+    # Format user context
+    user_context = format_user_context_for_prompt(user_profile)
+    
     # Build system prompt with dynamic context
-    config["system_prompt"] = DEFAULT_AGENT_SYSTEM_PROMPT.format(
+    base_prompt = DEFAULT_AGENT_SYSTEM_PROMPT.format(
         available_agents=agents_text,
         cwd=cwd,
         project_name=project_name
     )
+    
+    # Insert user context after the first section if available
+    if user_context:
+        # Insert after "You are Sudosu" intro paragraph
+        insert_point = base_prompt.find("## Your Primary Role")
+        if insert_point > 0:
+            config["system_prompt"] = (
+                base_prompt[:insert_point] + 
+                user_context + "\n\n" + 
+                base_prompt[insert_point:]
+            )
+        else:
+            config["system_prompt"] = user_context + "\n\n" + base_prompt
+    else:
+        config["system_prompt"] = base_prompt
     
     return config

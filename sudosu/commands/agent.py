@@ -14,6 +14,7 @@ from sudosu.core.agent_loader import (
     load_agent_config,
 )
 from sudosu.core.safety import is_safe_directory
+from sudosu.commands.integrations import get_available_integrations
 from sudosu.ui import (
     console,
     get_user_confirmation,
@@ -38,6 +39,7 @@ async def refine_prompt_via_backend(
     name: str,
     description: str,
     tools: list[str],
+    integrations: list[str] = None,
 ) -> tuple[str, str]:
     """Call the backend to refine an agent's system prompt.
     
@@ -45,11 +47,15 @@ async def refine_prompt_via_backend(
         name: Agent name
         description: Brief description from user
         tools: List of available tools
+        integrations: List of connected integrations (gmail, github, etc.)
         
     Returns:
         Tuple of (refined_system_prompt, refined_description)
         Returns fallback values if backend is unavailable.
     """
+    if integrations is None:
+        integrations = []
+    
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
@@ -58,6 +64,7 @@ async def refine_prompt_via_backend(
                     "name": name,
                     "description": description,
                     "tools": tools,
+                    "integrations": integrations,
                 },
             )
             
@@ -143,6 +150,16 @@ async def create_agent_command(name: Optional[str] = None):
         print_error(f"Agent '{name}' already exists in this project")
         return
     
+    # Fetch connected integrations
+    connected_integrations = []
+    try:
+        integrations_info = await get_available_integrations()
+        connected_integrations = integrations_info.get("connected", [])
+        if connected_integrations:
+            console.print(f"[dim]Found {len(connected_integrations)} connected integration(s): {', '.join(connected_integrations)}[/dim]")
+    except Exception:
+        pass  # Silently continue without integrations
+    
     # Check if we have a template
     if name in AGENT_TEMPLATES:
         template = AGENT_TEMPLATES[name]
@@ -160,12 +177,13 @@ async def create_agent_command(name: Optional[str] = None):
         # Default tools for the agent
         default_tools = ["read_file", "write_file", "list_directory"]
         
-        # Refine the prompt via backend
+        # Refine the prompt via backend (include connected integrations)
         console.print("[dim]Crafting agent prompt...[/dim]")
         refined_prompt, refined_description = await refine_prompt_via_backend(
             name=name,
             description=description,
             tools=default_tools,
+            integrations=connected_integrations,
         )
         
         if refined_prompt:
@@ -177,6 +195,19 @@ async def create_agent_command(name: Optional[str] = None):
         else:
             # Fallback to basic prompt if backend unavailable
             console.print(f"[{COLOR_ACCENT}]![/{COLOR_ACCENT}] [dim]Using basic prompt (backend unavailable)[/dim]")
+            
+            # Include integrations in fallback prompt if available
+            integrations_section = ""
+            if connected_integrations:
+                integrations_section = f"""
+## Connected Integrations
+
+You have access to these integrations - USE THEM for relevant tasks:
+{chr(10).join(f'- **{i}**: Use for {i}-related tasks' for i in connected_integrations)}
+
+**IMPORTANT**: Always use available integrations instead of asking the user to do things manually.
+"""
+            
             system_prompt = f"""# {name.replace('-', ' ').replace('_', ' ').title()} Agent
 
 You are {description.lower()}.
@@ -193,7 +224,7 @@ You are {description.lower()}.
 - **read_file**: Read content from files
 - **write_file**: Write content to files  
 - **list_directory**: List directory contents
-"""
+{integrations_section}"""
     
     # Create the agent
     try:
@@ -202,9 +233,12 @@ You are {description.lower()}.
             name=name,
             description=description,
             system_prompt=system_prompt,
+            integrations=connected_integrations,
         )
         console.print(f"[{COLOR_INTERACTIVE}]✓[/{COLOR_INTERACTIVE}] Agent [{COLOR_PRIMARY}]'{name}'[/{COLOR_PRIMARY}] created at {agent_path}", highlight=False)
         console.print(f"[{COLOR_INTERACTIVE}]ℹ[/{COLOR_INTERACTIVE}] Use [{COLOR_PRIMARY}]@{name}[/{COLOR_PRIMARY}] to start chatting", highlight=False)
+        if connected_integrations:
+            console.print(f"[dim]Agent configured with integrations: {', '.join(connected_integrations)}[/dim]")
     except Exception as e:
         print_error(f"Failed to create agent: {e}")
 

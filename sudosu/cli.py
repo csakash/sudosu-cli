@@ -19,6 +19,11 @@ from sudosu.commands.integrations import (
     handle_integrations_command,
 )
 from sudosu.commands.memory import handle_memory_command
+from sudosu.commands.onboarding import (
+    ensure_onboarding,
+    get_user_profile,
+    handle_profile_command,
+)
 from sudosu.core import ensure_config_structure, get_backend_url, get_global_config_dir
 from sudosu.core.connection import ConnectionManager
 from sudosu.core.default_agent import get_default_agent_config
@@ -46,7 +51,6 @@ from sudosu.ui import (
     COLOR_PRIMARY,
     COLOR_ACCENT,
 )
-
 
 app = typer.Typer(
     name="sudosu",
@@ -272,8 +276,11 @@ async def invoke_default_agent(message: str, cwd: str):
     # Get available agents to provide context
     available_agents = get_available_agents()
     
-    # Get default agent config with context
-    agent_config = get_default_agent_config(available_agents, cwd)
+    # Get user profile for personalization
+    user_profile = get_user_profile()
+    
+    # Get default agent config with context and user profile
+    agent_config = get_default_agent_config(available_agents, cwd, user_profile)
     
     print_agent_thinking("sudosu")
     routing_info = await stream_agent_response(agent_config, message, cwd, "sudosu")
@@ -330,6 +337,9 @@ async def handle_command(command: str):
     elif cmd == "/integrations":
         await handle_integrations_command(" ".join(args))
     
+    elif cmd == "/profile":
+        await handle_profile_command(" ".join(args))
+    
     elif cmd == "/init":
         if args and args[0] == "project":
             init_project_command()
@@ -365,6 +375,9 @@ async def interactive_session():
         # Silent auto-init - just create config with defaults, no prompts
         await init_command(silent=True)
     
+    # Run onboarding for first-time users (or sync profile from backend)
+    user_profile = await ensure_onboarding()
+    
     cwd = os.getcwd()
     
     # Safety check - warn if running from unsafe directory
@@ -377,11 +390,14 @@ async def interactive_session():
         if response != "continue":
             console.print(f"[{COLOR_ACCENT}]Exiting. Navigate to a project folder and try again.[/{COLOR_ACCENT}]")
             return
-        console.print(f"[{COLOR_ACCENT}]⚠️  Running in restricted mode. Agent creation and file writes are disabled.[/{COLOR_ACCENT}]\n")
+        console.print(f"[{COLOR_ACCENT}]Running in restricted mode. Agent creation and file writes are disabled.[/{COLOR_ACCENT}]\n")
     
-    # Get system username for personalized welcome
-    import getpass
-    username = getpass.getuser().capitalize()
+    # Get username for welcome message (prefer profile name, fallback to system user)
+    if user_profile and user_profile.get("name"):
+        username = user_profile["name"]
+    else:
+        import getpass
+        username = getpass.getuser().capitalize()
     print_welcome(username)
     
     # Get session manager for active agent tracking

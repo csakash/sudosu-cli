@@ -149,12 +149,14 @@ def print_help():
         ("/memory", "Show conversation memory info"),
         ("/memory clear", "Clear conversation (fresh start)"),
         ("/back", "Return to sudosu from an agent"),
+        ("/profile", "View your profile"),
+        ("/profile edit", "Update your profile"),
         ("/config", "Show current configuration"),
         ("/config set <key> <value>", "Set a configuration value"),
         ("/clear", "Clear the screen"),
         ("/quit", "Exit Sudosu"),
         ("", ""),
-        ("── Integrations ──", ""),
+        ("-- Integrations --", ""),
         ("/connect gmail", "Connect your Gmail account"),
         ("/disconnect gmail", "Disconnect Gmail"),
         ("/integrations", "Show connected integrations"),
@@ -167,7 +169,7 @@ def print_help():
         table.add_row(cmd, desc)
     
     console.print(table)
-    console.print(f"\n[dim]💡 Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
+    console.print(f"\n[dim]Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
 
 
 def print_agents(agents: list[dict]):

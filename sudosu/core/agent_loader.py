@@ -37,6 +37,11 @@ def parse_agent_file(agent_path: Path) -> Optional[dict]:
         if isinstance(tools, str):
             tools = [tools]
         
+        # Get integrations list
+        integrations = post.get("integrations", [])
+        if isinstance(integrations, str):
+            integrations = [integrations]
+        
         # Get the base system prompt and append context-aware instructions
         base_prompt = str(post.content).strip()
         # Append context awareness to all agents for better conversation handling
@@ -48,6 +53,7 @@ def parse_agent_file(agent_path: Path) -> Optional[dict]:
             "description": str(description),
             "model": str(post.get("model", "gemini-2.5-pro")),
             "tools": tools,
+            "integrations": integrations,
             "skills": post.get("skills", []),
             "system_prompt": system_prompt,
             "path": str(agent_path),
@@ -107,6 +113,7 @@ def create_agent_template(
     system_prompt: str,
     model: str = "gemini-2.5-pro",
     tools: Optional[list[str]] = None,
+    integrations: Optional[list[str]] = None,
 ) -> Path:
     """
     Create a new agent from a template.
@@ -118,12 +125,15 @@ def create_agent_template(
         system_prompt: Agent system prompt (markdown body)
         model: Model to use
         tools: List of allowed tools
+        integrations: List of connected integrations the agent should use
     
     Returns:
         Path to the created agent directory
     """
     if tools is None:
         tools = ["read_file", "write_file", "list_directory"]
+    if integrations is None:
+        integrations = []
     
     # Create agent directory
     agent_path = agent_dir / name
@@ -132,12 +142,25 @@ def create_agent_template(
     # Create AGENT.md
     agent_md = agent_path / "AGENT.md"
     
+    # Ensure description is properly quoted for YAML (contains colons, etc.)
+    # Use double quotes and escape any internal double quotes
+    safe_description = description.replace('"', '\\"')
+    
+    # Build integrations section if any
+    integrations_yaml = ""
+    if integrations:
+        integrations_yaml = f"""integrations:
+{chr(10).join(f'  - {integration}' for integration in integrations)}"""
+    else:
+        integrations_yaml = "integrations: []"
+    
     content = f"""---
 name: {name}
-description: {description}
+description: "{safe_description}"
 model: {model}
 tools:
 {chr(10).join(f'  - {tool}' for tool in tools)}
+{integrations_yaml}
 skills: []
 ---
 
