@@ -100,14 +100,24 @@ sudosu
 
 ### Configuration Files
 
-Sudosu stores configuration in `~/.sudosu/`:
+Sudosu stores minimal global config in `~/.sudosu/`:
 
 ```
 ~/.sudosu/
-└── config.yaml     # Preferences and mode settings
+└── config.yaml     # API keys, mode settings, user ID
 ```
 
-Project-specific configuration goes in `<your-repo>/.sudosu/`.
+**Project-level configuration** is created automatically when you run `sudosu` in any folder:
+
+```
+your-project/
+└── .sudosu/
+    ├── AGENT.md    # Your customizable AI assistant prompt
+    ├── agents/     # Custom agents created with /agent create
+    └── context.md  # (optional) Project context for all agents
+```
+
+Edit `.sudosu/AGENT.md` to customize how your AI assistant behaves in that project.
 
 ## Requirements
 

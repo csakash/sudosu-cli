@@ -24,9 +24,9 @@ from sudosu.commands.onboarding import (
     get_user_profile,
     handle_profile_command,
 )
-from sudosu.core import ensure_config_structure, get_backend_url, get_global_config_dir
+from sudosu.core import ensure_config_structure, ensure_project_structure, get_backend_url, get_global_config_dir
 from sudosu.core.connection import ConnectionManager
-from sudosu.core.default_agent import get_default_agent_config
+from sudosu.core.default_agent import get_default_agent_config, load_default_agent_from_file
 from sudosu.core.safety import is_safe_directory, get_safety_warning
 from sudosu.core.session import get_session_manager
 from sudosu.tools import execute_tool
@@ -272,15 +272,47 @@ async def invoke_active_agent(message: str, cwd: str):
 
 
 async def invoke_default_agent(message: str, cwd: str):
-    """Invoke the default Sudosu assistant with intelligent routing."""
+    """Invoke the default Sudosu assistant with intelligent routing.
+    
+    First tries to load from .sudosu/AGENT.md (user-editable).
+    Falls back to built-in default if file doesn't exist.
+    """
     # Get available agents to provide context
     available_agents = get_available_agents()
     
     # Get user profile for personalization
     user_profile = get_user_profile()
     
-    # Get default agent config with context and user profile
-    agent_config = get_default_agent_config(available_agents, cwd, user_profile)
+    # Try to load from .sudosu/AGENT.md first (user-customizable)
+    file_config = load_default_agent_from_file(cwd)
+    
+    if file_config:
+        # User has customized their AGENT.md - use it
+        # But still inject dynamic context (available agents, user profile)
+        agent_config = file_config.copy()
+        
+        # Inject available agents into system prompt if placeholder exists
+        # or append at the end
+        system_prompt = agent_config.get("system_prompt", "")
+        
+        # Add available agents context
+        if available_agents:
+            agents_text = "\n## Available Agents in This Project\n\n"
+            for a in available_agents:
+                agents_text += f"- **@{a.get('name')}**: {a.get('description', 'No description')}\n"
+            system_prompt = system_prompt + "\n" + agents_text
+        
+        # Add user context
+        if user_profile:
+            from sudosu.core.default_agent import format_user_context_for_prompt
+            user_context = format_user_context_for_prompt(user_profile)
+            if user_context:
+                system_prompt = user_context + "\n\n" + system_prompt
+        
+        agent_config["system_prompt"] = system_prompt
+    else:
+        # Fall back to built-in default agent config
+        agent_config = get_default_agent_config(available_agents, cwd, user_profile)
     
     print_agent_thinking("sudosu")
     routing_info = await stream_agent_response(agent_config, message, cwd, "sudosu")
@@ -369,9 +401,9 @@ async def handle_command(command: str):
 
 async def interactive_session():
     """Main interactive loop with active agent routing."""
-    # Ensure config exists - auto-create silently if needed
+    # Ensure global config exists (just config.yaml, not project structure)
     config_dir = get_global_config_dir()
-    if not config_dir.exists():
+    if not (config_dir / "config.yaml").exists():
         # Silent auto-init - just create config with defaults, no prompts
         await init_command(silent=True)
     
@@ -391,6 +423,16 @@ async def interactive_session():
             console.print(f"[{COLOR_ACCENT}]Exiting. Navigate to a project folder and try again.[/{COLOR_ACCENT}]")
             return
         console.print(f"[{COLOR_ACCENT}]Running in restricted mode. Agent creation and file writes are disabled.[/{COLOR_ACCENT}]\n")
+    else:
+        # Safe directory - ensure project .sudosu/ structure exists with default AGENT.md
+        project_config = Path(cwd) / ".sudosu"
+        is_new_project = not project_config.exists()
+        ensure_project_structure(Path(cwd))
+        
+        if is_new_project:
+            console.print(f"[{COLOR_PRIMARY}]✓[/{COLOR_PRIMARY}] Created .sudosu/ with default AGENT.md")
+            console.print("[dim]  Edit .sudosu/AGENT.md to customize your AI assistant[/dim]")
+            console.print()
     
     # Get username for welcome message (prefer profile name, fallback to system user)
     if user_profile and user_profile.get("name"):

@@ -23,9 +23,13 @@ console = Console()
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _get_history_file() -> Path:
-    """Get the path to the command history file."""
-    # Store history in ~/.sudosu/command_history (file, not directory)
-    history_dir = Path.home() / ".sudosu"
+    """Get the path to the command history file.
+    
+    Uses XDG-compliant location: ~/.local/share/sudosu/command_history
+    This keeps app data separate from project-level .sudosu/ configs.
+    """
+    # Use XDG-compliant location for app data
+    history_dir = Path.home() / ".local" / "share" / "sudosu"
     history_dir.mkdir(parents=True, exist_ok=True)
     return history_dir / "command_history"
 
@@ -193,7 +197,7 @@ def print_agents(agents: list[dict]):
         )
     
     console.print(table)
-    console.print("\n[dim]Agents are stored in .sudosu/agents/[/dim]")
+    console.print("\n[dim]Agents are stored in .sudosu/agents/ | Default prompt in .sudosu/AGENT.md[/dim]")
 
 
 def print_error(message: str):
