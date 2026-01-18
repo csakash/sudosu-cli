@@ -19,42 +19,77 @@ pip install sudosu
 
 ## Quick Start
 
-```bash
-# Initialize Sudosu
-sudosu init
+**Zero configuration required.** Just install and run:
 
+```bash
+# Install
+pip install sudosu
+
+# Start using immediately - no setup needed!
+sudosu
+```
+
+That's it! Sudosu works out of the box with our hosted backend.
+
+### Example Tasks
+
+```bash
 # Start interactive session
 sudosu
 
-# Create an agent
-/agent create writer
+# Then just ask:
+> Summarize the unread emails in my inbox
+> Create a Linear ticket for the bug we discussed
+> Check my calendar for tomorrow and draft a prep email
+> Go through #product-team slack and summarize yesterday's messages
+```
 
-# Use the agent
-Go through my slack channel product-team and summarise the messages from yesterday 
-and plan tickets in Linear
+### Connect Your Tools
+
+```bash
+# Inside sudosu, connect integrations:
+/connect gmail      # Connect Gmail
+/connect slack      # Connect Slack  
+/connect linear     # Connect Linear
+/connect github     # Connect GitHub
+/connect notion     # Connect Notion
 ```
 
 ## Features
 
+- 🚀 **Zero Config**: Install and run - works immediately with hosted backend
 - 🤖 **AI Coworkers**: Create specialized coworkers with specific personalities and capabilities
-- 🔌 **Tool Integrations**: Connect to Gmail, Calendar, GitHub, Linear, Slack, and more
+- 🔌 **Tool Integrations**: Connect to Gmail, Calendar, GitHub, Linear, Slack, Notion, and more
 - 📝 **File Operations**: Coworkers can read and write files in your repository
 - 🔄 **Real-time Streaming**: See responses as they're generated
 - 🔒 **Local Execution**: File operations happen on your machine, keeping data secure
 - ⚡ **Action-Oriented**: Your coworkers don't just answer questions — they take action
 
-## Configuration
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `/help` | Show all available commands |
+| `/connect <service>` | Connect an integration (gmail, slack, etc.) |
+| `/disconnect <service>` | Disconnect an integration |
+| `/integrations` | Show connected integrations |
+| `/agent create <name>` | Create a new agent |
+| `/agent list` | List available agents |
+| `/clear` | Clear the screen |
+| `/quit` | Exit sudosu |
+
+## Configuration (Optional)
+
+Sudosu works out of the box, but you can customize it:
 
 ### Environment Modes
-
-Sudosu supports **dev** and **prod** modes for easy switching between local and production backends:
 
 ```bash
 # Development mode (local backend)
 export SUDOSU_MODE=dev
 sudosu
 
-# Production mode (default)
+# Production mode (default - uses hosted backend)
 export SUDOSU_MODE=prod
 sudosu
 
@@ -63,20 +98,26 @@ sudosu
 /config mode prod  # Switch to production
 ```
 
-See [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) for detailed configuration options.
-
 ### Configuration Files
 
 Sudosu stores configuration in `~/.sudosu/`:
 
 ```
 ~/.sudosu/
-├── config.yaml     # API keys, backend URL, preferences, mode
-├── agents/         # Global agent definitions
-└── skills/         # Global skills library
+└── config.yaml     # Preferences and mode settings
 ```
 
-Project-specific configuration goes in `<repo>/.sudosu/`.
+Project-specific configuration goes in `<your-repo>/.sudosu/`.
+
+## Requirements
+
+- Python 3.10+
+- Internet connection (for hosted backend)
+
+## Links
+
+- **Website**: [trysudosu.com](https://trysudosu.com)
+- **Issues**: [GitHub Issues](https://github.com/csakash/sudosu-cli/issues)
 
 ## License
 
