@@ -2,6 +2,12 @@
 
 All notable changes to Sudosu will be documented in this file.
 
+## [0.1.4] - 2026-01-19
+
+### Changed
+- Version bump for new release
+- Improved stability and performance
+
 ## [0.1.2] - 2026-01-18
 
 ### Changed

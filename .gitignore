@@ -16,6 +16,9 @@ build/
 venv/
 env/
 ENV/
+test-env/
+test-local-install/
+test-*/
 
 # IDE
 .vscode/
