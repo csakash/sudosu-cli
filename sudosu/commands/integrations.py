@@ -11,7 +11,7 @@ import webbrowser
 
 import httpx
 
-from sudosu.core import get_config_value, set_config_value
+from sudosu.core import get_config_value, set_config_value, get_backend_url
 from sudosu.ui import (
     console,
     print_error,
@@ -25,8 +25,37 @@ from sudosu.ui import (
 )
 
 
-# Backend URL for integration APIs
-BACKEND_URL = os.environ.get("SUDOSU_BACKEND_URL", "http://localhost:8000")
+def get_http_backend_url() -> str:
+    """Get the HTTP backend URL derived from the WebSocket URL.
+    
+    Converts wss://example.com/ws -> https://example.com
+    Converts ws://localhost:8000/ws -> http://localhost:8000
+    """
+    # Check for explicit override first
+    explicit_url = os.environ.get("SUDOSU_BACKEND_URL")
+    if explicit_url:
+        return explicit_url.rstrip("/")
+    
+    # Get the WebSocket URL from config
+    ws_url = get_backend_url()
+    
+    # Convert WebSocket URL to HTTP URL
+    # wss://example.com/ws -> https://example.com
+    # ws://localhost:8000/ws -> http://localhost:8000
+    http_url = ws_url
+    
+    # Replace protocol
+    if http_url.startswith("wss://"):
+        http_url = http_url.replace("wss://", "https://", 1)
+    elif http_url.startswith("ws://"):
+        http_url = http_url.replace("ws://", "http://", 1)
+    
+    # Remove /ws path suffix if present
+    if http_url.endswith("/ws"):
+        http_url = http_url[:-3]
+    
+    return http_url.rstrip("/")
+
 
 # Display names for toolkits
 TOOLKIT_DISPLAY_NAMES = {
@@ -67,11 +96,12 @@ async def get_available_integrations() -> list[dict]:
         List of dicts with integration details
     """
     user_id = get_user_id()
+    backend_url = get_http_backend_url()
     
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                f"{BACKEND_URL}/api/integrations",
+                f"{backend_url}/api/integrations",
                 params={"user_id": user_id},
             )
             
@@ -94,11 +124,12 @@ async def check_integration_status(integration: str) -> dict:
         dict with 'connected' (bool) and other status info
     """
     user_id = get_user_id()
+    backend_url = get_http_backend_url()
     
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                f"{BACKEND_URL}/api/integrations/{integration}/status/{user_id}",
+                f"{backend_url}/api/integrations/{integration}/status/{user_id}",
             )
             
             if response.status_code == 200:
@@ -120,11 +151,12 @@ async def initiate_connection(integration: str) -> dict:
         dict with 'auth_url' if successful, or 'error' if failed
     """
     user_id = get_user_id()
+    backend_url = get_http_backend_url()
     
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
-                f"{BACKEND_URL}/api/integrations/{integration}/connect",
+                f"{backend_url}/api/integrations/{integration}/connect",
                 json={"user_id": user_id},
             )
             
@@ -148,11 +180,12 @@ async def disconnect_integration(integration: str) -> dict:
         dict with 'success' (bool) and message
     """
     user_id = get_user_id()
+    backend_url = get_http_backend_url()
     
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(
-                f"{BACKEND_URL}/api/integrations/{integration}/disconnect",
+                f"{backend_url}/api/integrations/{integration}/disconnect",
                 json={"user_id": user_id},
             )
             
@@ -425,11 +458,12 @@ async def get_registry_info() -> dict:
         Dict with registry data or error
     """
     user_id = get_user_id()
+    backend_url = get_http_backend_url()
     
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(
-                f"{BACKEND_URL}/api/registry/{user_id}/summary",
+                f"{backend_url}/api/registry/{user_id}/summary",
             )
             
             if response.status_code == 200:
