@@ -23,9 +23,13 @@ console = Console()
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _get_history_file() -> Path:
-    """Get the path to the command history file."""
-    # Store history in ~/.sudosu/command_history (file, not directory)
-    history_dir = Path.home() / ".sudosu"
+    """Get the path to the command history file.
+    
+    Uses XDG-compliant location: ~/.local/share/sudosu/command_history
+    This keeps app data separate from project-level .sudosu/ configs.
+    """
+    # Use XDG-compliant location for app data
+    history_dir = Path.home() / ".local" / "share" / "sudosu"
     history_dir.mkdir(parents=True, exist_ok=True)
     return history_dir / "command_history"
 
@@ -149,12 +153,14 @@ def print_help():
         ("/memory", "Show conversation memory info"),
         ("/memory clear", "Clear conversation (fresh start)"),
         ("/back", "Return to sudosu from an agent"),
+        ("/profile", "View your profile"),
+        ("/profile edit", "Update your profile"),
         ("/config", "Show current configuration"),
         ("/config set <key> <value>", "Set a configuration value"),
         ("/clear", "Clear the screen"),
         ("/quit", "Exit Sudosu"),
         ("", ""),
-        ("── Integrations ──", ""),
+        ("-- Integrations --", ""),
         ("/connect gmail", "Connect your Gmail account"),
         ("/disconnect gmail", "Disconnect Gmail"),
         ("/integrations", "Show connected integrations"),
@@ -167,7 +173,7 @@ def print_help():
         table.add_row(cmd, desc)
     
     console.print(table)
-    console.print(f"\n[dim]💡 Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
+    console.print(f"\n[dim]Tip: After sudosu routes you to an agent,\n   your follow-ups go to that agent automatically.[/dim]")
 
 
 def print_agents(agents: list[dict]):
@@ -191,7 +197,7 @@ def print_agents(agents: list[dict]):
         )
     
     console.print(table)
-    console.print("\n[dim]Agents are stored in .sudosu/agents/[/dim]")
+    console.print("\n[dim]Agents are stored in .sudosu/agents/ | Default prompt in .sudosu/AGENT.md[/dim]")
 
 
 def print_error(message: str):

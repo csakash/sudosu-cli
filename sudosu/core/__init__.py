@@ -11,8 +11,11 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Default paths
-GLOBAL_CONFIG_DIR = Path.home() / ".sudosu"
+# Default paths - use XDG-compliant location for app data
+# ~/.local/share/sudosu/ for app data (history, etc.)
+# ~/.config/sudosu/ for config (or keep ~/.sudosu/config.yaml for backwards compat)
+APP_DATA_DIR = Path.home() / ".local" / "share" / "sudosu"
+GLOBAL_CONFIG_DIR = Path.home() / ".sudosu"  # Keep for backwards compatibility
 CONFIG_FILE = "config.yaml"
 
 # Default backend URLs (hardcoded, not from env vars)
@@ -23,6 +26,11 @@ DEFAULT_PROD_BACKEND_URL = "wss://sudosu-cli.trysudosu.com/ws"
 def get_global_config_dir() -> Path:
     """Get the global configuration directory."""
     return GLOBAL_CONFIG_DIR
+
+
+def get_app_data_dir() -> Path:
+    """Get the app data directory (for history, cache, etc.)."""
+    return APP_DATA_DIR
 
 
 def get_project_config_dir(cwd: Optional[Path] = None) -> Optional[Path]:
@@ -36,10 +44,10 @@ def get_project_config_dir(cwd: Optional[Path] = None) -> Optional[Path]:
 
 def ensure_config_structure() -> Path:
     """
-    Ensure the global config directory structure exists.
+    Ensure the global config file exists.
     
-    NOTE: Only creates config.yaml, NOT agents directory.
-    Agents are project-local only (in .sudosu/agents/).
+    NOTE: Only creates config.yaml in ~/.sudosu/, nothing else.
+    All other files (.sudosu/AGENT.md, agents/, etc.) are project-local.
     """
     config_dir = get_global_config_dir()
     
@@ -62,6 +70,45 @@ def ensure_config_structure() -> Path:
             yaml.dump(default_config, f, default_flow_style=False)
     
     return config_dir
+
+
+def ensure_app_data_dir() -> Path:
+    """Ensure app data directory exists for history, cache, etc."""
+    APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    return APP_DATA_DIR
+
+
+def ensure_project_structure(cwd: Optional[Path] = None) -> Path:
+    """
+    Ensure project-local .sudosu/ structure exists with default AGENT.md.
+    
+    This is called when user runs `sudosu` in a directory.
+    Creates:
+      - .sudosu/
+      - .sudosu/AGENT.md (default agent prompt, user-editable)
+      - .sudosu/agents/ (for custom agents)
+    
+    Returns:
+        Path to the project .sudosu directory
+    """
+    from sudosu.core.default_agent import generate_default_agent_md
+    
+    cwd = cwd or Path.cwd()
+    project_config = cwd / ".sudosu"
+    
+    # Create .sudosu/ if it doesn't exist
+    project_config.mkdir(parents=True, exist_ok=True)
+    
+    # Create agents/ subdirectory
+    agents_dir = project_config / "agents"
+    agents_dir.mkdir(exist_ok=True)
+    
+    # Create default AGENT.md if it doesn't exist
+    default_agent_file = project_config / "AGENT.md"
+    if not default_agent_file.exists():
+        default_agent_file.write_text(generate_default_agent_md())
+    
+    return project_config
 
 
 def load_config() -> dict:
@@ -150,8 +197,12 @@ def get_backend_url() -> str:
         return config_url if config_url else DEFAULT_PROD_BACKEND_URL
 
 
-def get_agents_dir(project_first: bool = True) -> Path:
-    """Get the agents directory (project-specific or global)."""
+def get_agents_dir(project_first: bool = True) -> Optional[Path]:
+    """Get the agents directory (project-specific only).
+    
+    Returns:
+        Path to project's .sudosu/agents/ or None if not in a project
+    """
     if project_first:
         project_dir = get_project_config_dir()
         if project_dir:
@@ -159,11 +210,15 @@ def get_agents_dir(project_first: bool = True) -> Path:
             if agents_dir.exists():
                 return agents_dir
     
-    return get_global_config_dir() / "agents"
+    return None
 
 
-def get_skills_dir(project_first: bool = True) -> Path:
-    """Get the skills directory (project-specific or global)."""
+def get_skills_dir(project_first: bool = True) -> Optional[Path]:
+    """Get the skills directory (project-specific only).
+    
+    Returns:
+        Path to project's .sudosu/skills/ or None if not in a project
+    """
     if project_first:
         project_dir = get_project_config_dir()
         if project_dir:
@@ -171,7 +226,7 @@ def get_skills_dir(project_first: bool = True) -> Path:
             if skills_dir.exists():
                 return skills_dir
     
-    return get_global_config_dir() / "skills"
+    return None
 
 
 # Export session management
