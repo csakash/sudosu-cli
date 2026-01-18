@@ -359,12 +359,11 @@ async def handle_command(command: str):
 
 async def interactive_session():
     """Main interactive loop with active agent routing."""
-    # Ensure config exists
+    # Ensure config exists - auto-create silently if needed
     config_dir = get_global_config_dir()
     if not config_dir.exists():
-        print_info("First time setup required. Running 'sudosu init'...")
-        await init_command()
-        return
+        # Silent auto-init - just create config with defaults, no prompts
+        await init_command(silent=True)
     
     cwd = os.getcwd()
     
@@ -455,7 +454,7 @@ def main(
         return
     
     if init:
-        asyncio.run(init_command())
+        asyncio.run(init_command(silent=False))
         return
     
     if prompt:

@@ -2,44 +2,29 @@
 
 from pathlib import Path
 
-from sudosu.core import ensure_config_structure, get_global_config_dir, set_config_value
-from sudosu.ui import console, get_user_input, print_error, print_info, print_success
+from sudosu.core import ensure_config_structure, get_global_config_dir
+from sudosu.ui import console, print_info, print_success
 
 
-async def init_command():
-    """Initialize Sudosu configuration."""
-    console.print()
-    console.print("[bold blue]🚀 Welcome to Sudosu![/bold blue]")
-    console.print()
+async def init_command(silent: bool = False):
+    """Initialize Sudosu configuration.
     
+    Args:
+        silent: If True, skip all prompts and use defaults (for auto-init)
+    """
     config_dir = get_global_config_dir()
     
-    if config_dir.exists():
-        print_info(f"Configuration already exists at {config_dir}")
-        console.print("[dim]Checking structure...[/dim]")
-    
-    # Ensure structure exists
+    # Ensure structure exists (creates config with production defaults)
     ensure_config_structure()
     
-    console.print()
-    print_success(f"Created {config_dir}/config.yaml")
-    print_success(f"Created {config_dir}/agents/")
-    print_success(f"Created {config_dir}/skills/")
-    
-    # Ask for backend URL
-    console.print()
-    print_info("Enter your backend URL (or press Enter for localhost)")
-    backend_url = get_user_input("Backend URL [ws://localhost:8000/ws]: ").strip()
-    
-    if backend_url:
-        set_config_value("backend_url", backend_url)
-        print_success(f"Backend URL set to: {backend_url}")
-    else:
-        print_info("Using default: ws://localhost:8000/ws")
-    
-    console.print()
-    print_success("Setup complete! Run 'sudosu' to start.")
-    console.print()
+    if not silent:
+        console.print()
+        console.print("[bold blue]🚀 Welcome to Sudosu![/bold blue]")
+        console.print()
+        print_success(f"Configuration created at {config_dir}")
+        console.print()
+        print_success("Setup complete! You're ready to go.")
+        console.print()
 
 
 def init_project_command():

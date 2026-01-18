@@ -17,7 +17,7 @@ CONFIG_FILE = "config.yaml"
 
 # Default backend URLs (hardcoded, not from env vars)
 DEFAULT_DEV_BACKEND_URL = "ws://localhost:8000/ws"
-DEFAULT_PROD_BACKEND_URL = "wss://sudosu-cli-backend.vercel.app/ws"
+DEFAULT_PROD_BACKEND_URL = "wss://sudosu-cli.trysudosu.com/ws"
 
 
 def get_global_config_dir() -> Path:
