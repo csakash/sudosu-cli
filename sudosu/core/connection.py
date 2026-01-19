@@ -169,6 +169,15 @@ class ConnectionManager:
                         await on_special_message(data)
                     yield data
                 
+                elif msg_type == "background_queued":
+                    # Task has been queued for background execution
+                    if on_special_message:
+                        await on_special_message(data)
+                    yield data
+                    # Background tasks complete immediately from client perspective
+                    # The actual work happens in the background
+                    break
+                
                 else:
                     yield data
                     

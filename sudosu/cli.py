@@ -24,6 +24,7 @@ from sudosu.commands.onboarding import (
     get_user_profile,
     handle_profile_command,
 )
+from sudosu.commands.tasks import handle_tasks_command, app as tasks_app
 from sudosu.core import ensure_config_structure, ensure_project_structure, get_backend_url, get_global_config_dir
 from sudosu.core.connection import ConnectionManager
 from sudosu.core.default_agent import get_default_agent_config, load_default_agent_from_file
@@ -56,7 +57,46 @@ app = typer.Typer(
     name="sudosu",
     help="Your AI Coworker Platform — AI teammates that actually get work done",
     add_completion=False,
+    invoke_without_command=True,
+    no_args_is_help=False,
 )
+
+# Add tasks as a subcommand group
+app.add_typer(tasks_app, name="tasks", help="Manage background tasks")
+
+
+@app.callback(invoke_without_command=True)
+def main_callback(
+    ctx: typer.Context,
+    init: bool = typer.Option(False, "--init", "-i", help="Initialize Sudosu configuration"),
+    version: bool = typer.Option(False, "--version", "-v", help="Show version"),
+):
+    """
+    Sudosu - Your AI Coworker Platform
+    
+    Get AI coworkers that can read your files, write code, connect to your tools
+    (Gmail, Calendar, GitHub, Linear, Slack), and actually get work done.
+    
+    Examples:
+        sudosu                          # Start interactive session
+        sudosu --init                   # Initialize configuration
+        sudosu tasks list               # List background tasks
+    """
+    # If a subcommand was invoked (like 'tasks'), don't run main
+    if ctx.invoked_subcommand is not None:
+        return
+    
+    if version:
+        from sudosu import __version__
+        console.print(f"sudosu version {__version__}")
+        return
+    
+    if init:
+        asyncio.run(init_command(silent=False))
+        return
+    
+    # Interactive mode (default)
+    _run_main_logic(None)
 
 
 def parse_agent_prompt(text: str) -> tuple[str, str]:
@@ -163,6 +203,20 @@ async def stream_agent_response(agent_config: dict, message: str, cwd: str, agen
                     "reason": msg["reason"],
                     "user_request": msg["user_request"],
                 }
+            
+            elif msg.get("type") == "background_queued":
+                # Task has been queued for background execution
+                task_id = msg.get("task_id", "unknown")
+                reason = msg.get("reason", "Complex task")
+                stream_printer.flush()
+                console.print()
+                console.print(f"[bold cyan]📋 Task Queued for Background Execution[/bold cyan]")
+                console.print(f"[dim]Task ID:[/dim] [yellow]{task_id}[/yellow]")
+                console.print(f"[dim]Reason:[/dim] {reason}")
+                console.print()
+                console.print("[dim]Use [bold]/tasks status {task_id}[/bold] to check progress[/dim]")
+                console.print("[dim]Use [bold]/tasks list[/bold] to see all your background tasks[/dim]")
+                console.print()
             
             return None
         
@@ -372,6 +426,9 @@ async def handle_command(command: str):
     elif cmd == "/profile":
         await handle_profile_command(" ".join(args))
     
+    elif cmd == "/tasks":
+        handle_tasks_command(args)
+    
     elif cmd == "/init":
         if args and args[0] == "project":
             init_project_command()
@@ -489,32 +546,8 @@ async def interactive_session():
             break
 
 
-@app.command()
-def main(
-    prompt: Optional[str] = typer.Argument(None, help="Prompt to send to an agent (e.g., '@writer hello')"),
-    init: bool = typer.Option(False, "--init", "-i", help="Initialize Sudosu configuration"),
-    version: bool = typer.Option(False, "--version", "-v", help="Show version"),
-):
-    """
-    Sudosu - Your AI Coworker Platform
-    
-    Get AI coworkers that can read your files, write code, connect to your tools
-    (Gmail, Calendar, GitHub, Linear, Slack), and actually get work done.
-    
-    Examples:
-        sudosu                          # Start interactive session
-        sudosu --init                   # Initialize configuration
-        sudosu "@writer write a blog"   # Direct agent invocation
-    """
-    if version:
-        from sudosu import __version__
-        console.print(f"sudosu version {__version__}")
-        return
-    
-    if init:
-        asyncio.run(init_command(silent=False))
-        return
-    
+def _run_main_logic(prompt: Optional[str]):
+    """Execute the main logic for sudosu CLI."""
     if prompt:
         # Direct invocation
         cwd = os.getcwd()
