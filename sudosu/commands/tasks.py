@@ -233,6 +233,7 @@ def list_tasks(
         help="Filter by status: all, pending, running, completed, failed, cancelled"
     ),
     limit: int = typer.Option(10, "--limit", "-n", help="Number of tasks to show"),
+    full_id: bool = typer.Option(False, "--full-id", "-f", help="Show full task IDs"),
 ):
     """List your background tasks."""
     tasks = run_async(_list_tasks(status if status != "all" else None, limit))
@@ -242,7 +243,10 @@ def list_tasks(
         return
     
     table = Table(title="Background Tasks", show_header=True, header_style="bold cyan")
-    table.add_column("ID", style="dim", width=10)
+    
+    # Adjust ID column width based on full_id flag
+    id_width = 36 if full_id else 12
+    table.add_column("ID", style="dim", width=id_width)
     table.add_column("Status", width=12)
     table.add_column("Task Name", width=35)
     table.add_column("Progress", width=12)
@@ -267,8 +271,11 @@ def list_tasks(
         if len(task_name) > 33:
             task_name = task_name[:30] + "..."
         
+        # Show full or truncated ID based on flag
+        task_id_display = task["task_id"] if full_id else (task["task_id"][:12] + "...")
+        
         table.add_row(
-            task["task_id"][:8] + "...",
+            task_id_display,
             status_text,
             task_name,
             progress,
@@ -278,7 +285,11 @@ def list_tasks(
     console.print()
     console.print(table)
     console.print()
-    console.print("[dim]Use 'sudosu tasks status <task_id>' for details[/dim]")
+    if not full_id:
+        console.print("[dim]Use 'sudosu tasks status <task_id>' for details[/dim]")
+        console.print("[dim]Use --full-id to show complete task IDs for copy/paste[/dim]")
+    else:
+        console.print("[dim]Use 'sudosu tasks status <task_id>' for details[/dim]")
 
 
 @app.command("status")
@@ -428,9 +439,18 @@ def task_report(
 
 @app.command("cancel")
 def cancel_task(
-    task_id: str = typer.Argument(..., help="Task ID to cancel"),
+    task_id: str = typer.Argument(..., help="Task ID to cancel (full or partial)"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
 ):
-    """Cancel a pending or running task."""
+    """Cancel a pending or running task.
+    
+    This will:
+    - Mark the task as cancelled in the database
+    - Stop execution at the next checkpoint (before the next tool call)
+    - Prevent the task from running if it hasn't started yet
+    
+    Note: Tasks in the middle of a tool call will complete that call before stopping.
+    """
     # Handle partial task IDs
     if len(task_id) < 36:
         tasks = run_async(_list_tasks(None, 100))
@@ -441,34 +461,54 @@ def cancel_task(
             console.print(f"[red]No task found starting with '{task_id}'[/red]")
             return
         else:
-            console.print(f"[yellow]Multiple tasks match. Use more characters.[/yellow]")
+            console.print(f"[yellow]Multiple tasks match '{task_id}':[/yellow]")
+            for t in matches[:5]:
+                console.print(f"  • {t['task_id']} - {t['task_name'][:40]}")
+            console.print(f"\n[dim]Use more characters to uniquely identify the task[/dim]")
             return
     
-    # Confirm cancellation
+    # Get task details
     task = run_async(_get_task(task_id))
     if not task:
         return
     
-    console.print(f"\n[yellow]Are you sure you want to cancel this task?[/yellow]")
-    console.print(f"  Task: {task['task_name']}")
-    console.print(f"  Status: {task['status']}")
-    
+    # Check if task can be cancelled
     if task["status"] not in ("pending", "running"):
         console.print(f"\n[yellow]This task cannot be cancelled (status: {task['status']})[/yellow]")
+        console.print("[dim]Only pending or running tasks can be cancelled.[/dim]")
         return
     
-    confirm = typer.confirm("Cancel this task?")
-    if not confirm:
-        console.print("[dim]Cancelled.[/dim]")
-        return
+    # Show confirmation unless force flag is set
+    if not force:
+        console.print(f"\n[yellow]⚠ Cancel this task?[/yellow]")
+        console.print(f"  [bold]Task:[/bold] {task['task_name']}")
+        console.print(f"  [bold]Status:[/bold] {task['status']}")
+        console.print(f"  [bold]Progress:[/bold] {task['completed_items']}/{task['total_items']} items")
+        console.print()
+        
+        confirm = typer.confirm("Cancel this task?", default=False)
+        if not confirm:
+            console.print("[dim]Cancelled.[/dim]")
+            return
     
+    # Cancel the task
     success = run_async(_cancel_task(task_id))
     
     if success:
-        console.print(f"\n[green]✓ Task cancellation requested[/green]")
-        console.print("[dim]Note: Running tasks will stop at the next checkpoint.[/dim]")
+        console.print(f"\n[green]✓ Task cancelled successfully[/green]")
+        console.print(f"  [bold]Task ID:[/bold] {task_id}")
+        console.print()
+        console.print("[cyan]What happens now:[/cyan]")
+        if task["status"] == "pending":
+            console.print("  • Task was not yet started - it will be skipped")
+        else:
+            console.print("  • Task will stop before the next tool call")
+            console.print("  • Current operation will complete gracefully")
+        console.print()
+        console.print(f"[dim]Use 'sudosu tasks status {task_id[:12]}' to verify cancellation[/dim]")
     else:
         console.print(f"\n[red]✗ Failed to cancel task[/red]")
+        console.print("[dim]The task may have already completed or been cancelled.[/dim]")
 
 
 @app.command("watch")
