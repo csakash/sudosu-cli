@@ -55,6 +55,74 @@ sudosu
 /connect notion     # Connect Notion
 ```
 
+## Self-Hosting (Optional)
+
+Want to run your own backend? You can self-host the Sudosu backend with Docker:
+
+### Quick Self-Host
+
+```bash
+# Pull the Docker image
+docker pull akash07/sudosu-cli-image:latest
+
+# Run with your own configuration
+docker run -d -p 8000:8000 \
+  -e GOOGLE_API_KEY=your-google-api-key \
+  -e COMPOSIO_API_KEY=your-composio-api-key \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
+  -e REDIS_URL=redis://host:6379 \
+  -e RESEND_API_KEY=your-resend-api-key \
+  akash07/sudosu-cli-image:latest
+```
+
+### Full Stack with Docker Compose
+
+For a complete setup with Redis and background worker, create a `docker-compose.yml` file:
+
+use this compose code : https://gist.github.com/csakash/d26619add372013af6d0e7b119af28c0
+
+Create a `.env` file with your credentials:
+
+```bash
+# Create .env file
+cat > .env << EOF
+GOOGLE_API_KEY=your-google-api-key-here
+COMPOSIO_API_KEY=your-composio-api-key-here
+DATABASE_URL=postgresql://user:password@host:5432/database
+RESEND_API_KEY=your-resend-api-key-here
+LOG_LEVEL=INFO
+EOF
+
+# Start all services
+docker-compose up -d
+```
+
+### Connect CLI to Your Self-Hosted Backend
+
+After starting your backend, configure the CLI:
+
+```bash
+# Set development mode to use local backend
+export SUDOSU_MODE=dev
+export SUDOSU_BACKEND_URL=http://localhost:8000
+
+# Or configure within CLI
+sudosu
+> /config mode dev
+> /config backend http://localhost:8000
+```
+
+### Requirements for Self-Hosting
+
+- **PostgreSQL Database**: Any provider (Neon, Supabase, local, etc.)
+- **Redis**: Included in docker-compose or use external instance
+- **API Keys**:
+  - Google API Key (Gemini): [Get here](https://aistudio.google.com/app/apikey)
+  - Composio API Key: [Get here](https://app.composio.dev)
+  - Resend API Key: [Get here](https://resend.com)
+
+For detailed self-hosting instructions, see the [backend repository](https://github.com/csakash/sudosu-cli-backend).
+
 ## Features
 
 - 🚀 **Zero Config**: Install and run - works immediately with hosted backend
