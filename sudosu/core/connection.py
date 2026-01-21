@@ -26,12 +26,18 @@ class ConnectionManager:
         
         Uses certifi's CA bundle for SSL verification to ensure
         compatibility across all platforms (especially macOS).
+        
+        For local development (ws://), SSL is disabled.
         """
         try:
-            # Create SSL context with certifi's CA bundle
-            # This fixes SSL verification issues on macOS where Python
-            # doesn't use the system certificate store by default
-            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            # Only use SSL for secure WebSocket connections (wss://)
+            # For local dev (ws://), don't pass ssl parameter
+            ssl_context = None
+            if self.backend_url.startswith("wss://"):
+                # Create SSL context with certifi's CA bundle
+                # This fixes SSL verification issues on macOS where Python
+                # doesn't use the system certificate store by default
+                ssl_context = ssl.create_default_context(cafile=certifi.where())
             
             self.ws = await websockets.connect(
                 self.backend_url,
