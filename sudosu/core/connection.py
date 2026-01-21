@@ -2,8 +2,10 @@
 
 import asyncio
 import json
+import ssl
 from typing import Any, AsyncGenerator, Callable, Optional
 
+import certifi
 import websockets
 from websockets.client import WebSocketClientProtocol
 
@@ -21,10 +23,19 @@ class ConnectionManager:
         
         Timeout values increased to support long-running operations
         like bulk email fetching (100+ emails) and multi-step automations.
+        
+        Uses certifi's CA bundle for SSL verification to ensure
+        compatibility across all platforms (especially macOS).
         """
         try:
+            # Create SSL context with certifi's CA bundle
+            # This fixes SSL verification issues on macOS where Python
+            # doesn't use the system certificate store by default
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+            
             self.ws = await websockets.connect(
                 self.backend_url,
+                ssl=ssl_context,
                 ping_interval=120,   # 2 minutes (was 30s)
                 ping_timeout=60,     # 1 minute (was 10s)  
                 max_size=20_000_000, # 20MB for large responses
@@ -168,15 +179,6 @@ class ConnectionManager:
                     if on_special_message:
                         await on_special_message(data)
                     yield data
-                
-                elif msg_type == "background_queued":
-                    # Task has been queued for background execution
-                    if on_special_message:
-                        await on_special_message(data)
-                    yield data
-                    # Background tasks complete immediately from client perspective
-                    # The actual work happens in the background
-                    break
                 
                 else:
                     yield data
